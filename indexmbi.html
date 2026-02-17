@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PREALTY - Simulateur MDB v5.4</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--primary:#1E3A5F;--primary-light:#2D5A8B;--secondary:#10B981;--accent:#F59E0B;--danger:#EF4444;--purple:#8B5CF6;--bg:#F8FAFC;--text:#1E293B;--text-light:#64748B;--border:#E2E8F0;--shadow:0 1px 3px rgba(0,0,0,0.1);--radius:16px;--radius-sm:10px}
+        body.dark{
+            --bg:#0B1220;
+            --text:#E5E7EB;
+            --text-light:#A7B2C2;
+            --border:#233044;
+            --shadow:0 1px 3px rgba(0,0,0,0.55);
+            --input-bg:#0B1220;
+            --card-bg:#0F172A;
+            --muted-bg:#101C33;
+        }
+        /* Dark mode readability fixes */
+        body.dark input,
+        body.dark select,
+        body.dark textarea{
+            background:var(--input-bg)!important;
+            color:var(--text)!important;
+            border-color:var(--border)!important;
+        }
+        body.dark input::placeholder,
+        body.dark textarea::placeholder{
+            color:#8FA0B8!important;
+            opacity:1!important;
+        }
+        body.dark option{
+            background:var(--input-bg);
+            color:var(--text);
+        }
+        body.dark .kpi-value,
+        body.dark .metric-value,
+        body.dark .stat-value{
+            color:var(--text)!important;
+        }
+        body.dark .badge,
+        body.dark .tag{
+            color:var(--text)!important;
+        }
+        body.dark .hint,
+        body.dark .help-text,
+        body.dark .small-note{
+            color:var(--text-light)!important;
+            opacity:1!important;
+        }
+        body.dark .projects-modal .project-meta{ color:var(--text-light)!important; opacity:1!important; }
+        body.dark .card{background:var(--card-bg)}
+        body.dark .card-header{background:linear-gradient(135deg,#0B1220,#111827)}
+        body.dark .btn-secondary{background:#0F172A;color:var(--text);border:1px solid var(--border)}
+        body.dark .lot-header{background:#0F172A}
+        body.dark .scenario-card{background:#0F172A}
+        body.dark .result-card{background:#0F172A}
+        body.dark .detail-section{background:#0F172A}
+        body.dark .lots-table th{background:#0B1220}
+        body.dark .gng-bar-track{background:#111827}
+        body.dark .input-suffix span{color:var(--text-light)}
+        body.dark input, body.dark select{background:#0B1220;color:var(--text);border-color:var(--border)}
+        body.dark input:focus, body.dark select:focus{border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(45,90,139,0.25)}
+
+        /* Dark mode: lisibilité */
+        body.dark ::placeholder{color:var(--text-light);opacity:0.9}
+        body.dark .gng-circle.go{background:#064E3B}
+        body.dark .gng-circle.vigilance{background:#3A2A0A}
+        body.dark .gng-circle.nogo{background:#3B0A0A}
+        body.dark .gng-card{background:#0F172A;border-color:var(--border)}
+        body.dark .lots-table td{color:var(--text)}
+        body.dark .lots-table tr:hover td{background:#0B1220}
+
+        /* Modal (projets) */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:16px;z-index:9999}
+        .modal-overlay.open{display:flex}
+        .modal{width:min(760px,100%);background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden}
+        .modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#EEF2FF,#FFFFFF)}
+        .modal-title{font-weight:800}
+        .modal-body{padding:14px 16px;max-height:min(70vh,640px);overflow:auto}
+        .modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+        .project-list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+        .project-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--bg)}
+        .project-name{font-weight:700}
+        .project-meta{font-size:12px;color:var(--text-light);margin-top:2px}
+        .project-actions{display:flex;gap:8px;flex-wrap:wrap}
+        .btn-danger{background:#DC2626;color:white}
+        .btn-danger:hover{filter:brightness(.95)}
+        body.dark .modal-header{background:linear-gradient(135deg,#0B1220,#111827)}
+        body.dark .project-item{background:#0B1220}
+
+
+        /* Responsive */
+        @media(max-width:900px){
+            .container{padding:14px}
+            .page-header h1{font-size:22px}
+            .header-actions{flex-wrap:wrap}
+            .form-row,.form-row.triple,.form-row.quad{grid-template-columns:1fr}
+            .lot-row,.lot-row.double{grid-template-columns:1fr}
+            .scenarios-grid{grid-template-columns:1fr}
+            .results-grid{grid-template-columns:repeat(2,1fr)}
+            .gng-container{grid-template-columns:1fr}
+            .associe-grid{grid-template-columns:1fr}
+            .rep-bar{height:28px}
+        }
+        @media(max-width:520px){
+            .results-grid{grid-template-columns:1fr}
+            .btn{padding:10px 14px}
+        }
+
+        /* Print: focus on results only */
+        @media print{
+            .container{max-width:none;padding:0}
+            .page-header{margin:0 0 12px 0}
+            .page-header h1{font-size:18px}
+            .version-badge{display:none}
+            .header-actions{display:none!important}
+            .main-grid{grid-template-columns:1fr!important;gap:0}
+            .main-grid>div:first-child{display:none!important}
+            .card{margin-bottom:10px;border-radius:10px}
+            .card-header{padding:10px 12px}
+            .card-body{padding:12px}
+            .scenarios-grid{grid-template-columns:repeat(3,1fr)}
+            .results-grid{grid-template-columns:repeat(4,1fr)}
+            .lots-table th,.lots-table td{padding:6px 8px;font-size:10px}
+            .conseil{padding:8px 10px}
+            .gauge-container{padding:12px}
+        }
+
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+        .container{max-width:1800px;margin:0 auto;padding:24px}
+        @media print{body{background:white}.btn{display:none!important}.card{break-inside:avoid;box-shadow:none;border:1px solid var(--border)}}
+        .page-header{margin-bottom:32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+        .page-header h1{font-size:28px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:12px}
+        .page-header h1 i{color:var(--accent)}
+        .header-actions{display:flex;gap:12px}
+        .version-badge{background:linear-gradient(135deg,var(--purple),var(--primary));color:white;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:var(--radius-sm);font-weight:500;font-size:14px;cursor:pointer;transition:all 0.2s;border:none;font-family:inherit}
+        .btn:hover{opacity:0.9;transform:translateY(-1px)}
+        .btn-primary{background:var(--primary);color:white}
+        .btn-secondary{background:white;color:var(--text);border:1px solid var(--border)}
+        .btn-success{background:var(--secondary);color:white}
+        .btn-sm{padding:8px 16px;font-size:13px}
+        .btn-icon{width:36px;height:36px;padding:0;justify-content:center;border-radius:8px}
+        .main-grid{display:grid;grid-template-columns:620px 1fr;gap:32px;align-items:start}
+        @media(max-width:1400px){.main-grid{grid-template-columns:1fr}}
+        .card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:24px}
+        .card-header{padding:20px 24px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#F8FAFC,#EEF2FF);display:flex;justify-content:space-between;align-items:center;border-radius:var(--radius) var(--radius) 0 0}
+        .card-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px}
+        .card-title i{color:var(--primary)}
+        .card-body{padding:24px}
+        .form-section{margin-bottom:24px}
+        .form-section:last-child{margin-bottom:0}
+        .form-section-title{font-size:13px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .form-section-title i{color:var(--primary)}
+        .form-row{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}
+        .form-row.triple{grid-template-columns:repeat(3,1fr)}
+        .form-row.quad{grid-template-columns:repeat(4,1fr)}
+        .form-group{display:flex;flex-direction:column}
+        .form-group label{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+        .form-group input,.form-group select{padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;width:100%;font-family:inherit}
+        .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(30,58,95,0.1)}
+        .input-suffix{position:relative}
+        .input-suffix input{padding-right:42px}
+        .input-suffix span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-light);font-size:13px;pointer-events:none}
+        .lot-card{background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);margin-bottom:12px;transition:all .2s}
+        .lot-card:hover{border-color:#CBD5E1}
+        .lot-card.vendu{border-color:var(--secondary);background:linear-gradient(135deg,#F0FDF4,#ECFDF5)}
+        .lot-card.terrain{border-color:var(--accent)}
+        .lot-card.renovation{border-color:var(--purple)}
+        .lot-header{padding:14px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:white;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0}
+        .lot-title{display:flex;align-items:center;gap:12px}
+        .lot-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+        .lot-card.terrain .lot-icon{background:#FEF3C7;color:#D97706}
+        .lot-card.renovation .lot-icon{background:#EDE9FE;color:#7C3AED}
+        .lot-card.vendu .lot-icon{background:#D1FAE5;color:#059669}
+        .lot-info h4{font-size:14px;font-weight:600}
+        .lot-info span{font-size:11px;color:var(--text-light)}
+        .lot-summary{display:flex;align-items:center;gap:12px}
+        .lot-stat{text-align:right;min-width:100px}
+        .lot-stat-value{font-size:15px;font-weight:700}
+        .lot-stat-value.positive{color:var(--secondary)}
+        .lot-stat-value.negative{color:var(--danger)}
+        .lot-stat-label{font-size:10px;color:var(--text-light)}
+        .lot-body{padding:18px;display:none}
+        .lot-card.open .lot-body{display:block}
+        .lot-toggle{transition:transform .3s;color:var(--text-light)}
+        .lot-card.open .lot-toggle{transform:rotate(180deg)}
+        .lot-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+        .lot-row.double{grid-template-columns:repeat(2,1fr)}
+        .status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600}
+        .status-badge.vendu{background:#D1FAE5;color:#059669}
+        .status-badge.en-vente{background:#FEF3C7;color:#D97706}
+        .status-badge.travaux{background:#EDE9FE;color:#7C3AED}
+        .scenarios-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+        .scenario-card{background:var(--bg);border-radius:var(--radius);padding:20px;text-align:center;border:2px solid transparent}
+        .scenario-card.pessimiste{border-color:#FCA5A5;background:linear-gradient(135deg,#FEF2F2,#FEE2E2)}
+        .scenario-card.realiste{border-color:#FCD34D;background:linear-gradient(135deg,#FFFBEB,#FEF3C7)}
+        .scenario-card.optimiste{border-color:#6EE7B7;background:linear-gradient(135deg,#ECFDF5,#D1FAE5)}
+        .scenario-label{font-size:11px;font-weight:700;text-transform:uppercase;margin-bottom:4px}
+        .scenario-card.pessimiste .scenario-label{color:#DC2626}
+        .scenario-card.realiste .scenario-label{color:#D97706}
+        .scenario-card.optimiste .scenario-label{color:#059669}
+        .scenario-prix{font-size:12px;color:var(--text-light);margin-bottom:12px}
+        .scenario-marge{font-size:24px;font-weight:800;margin-bottom:4px}
+        .scenario-card.pessimiste .scenario-marge{color:#DC2626}
+        .scenario-card.realiste .scenario-marge{color:#D97706}
+        .scenario-card.optimiste .scenario-marge{color:#059669}
+        .scenario-roi{font-size:13px;font-weight:600;padding:4px 12px;border-radius:20px;display:inline-block}
+        .scenario-card.pessimiste .scenario-roi{background:#FEE2E2;color:#DC2626}
+        .scenario-card.realiste .scenario-roi{background:#FEF3C7;color:#D97706}
+        .scenario-card.optimiste .scenario-roi{background:#D1FAE5;color:#059669}
+        .results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+        .result-card{background:var(--bg);border-radius:var(--radius-sm);padding:18px;text-align:center}
+        .result-label{font-size:11px;font-weight:500;color:var(--text-light);margin-bottom:8px;text-transform:uppercase}
+        .result-value{font-size:20px;font-weight:800;color:var(--primary)}
+        .detail-section{background:var(--bg);border-radius:var(--radius-sm);padding:16px 20px;margin-bottom:16px}
+        .detail-section-title{font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+        .detail-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid #E2E8F0}
+        .detail-row:last-child{border-bottom:none}
+        .detail-row .lbl{color:var(--text-light)}
+        .detail-row .val{font-weight:600}
+        .detail-row.total{border-top:2px solid var(--primary);padding-top:10px;margin-top:6px;font-weight:700;font-size:14px;border-bottom:none}
+        .detail-row.total .val{color:var(--primary)}
+        .lots-table{width:100%;border-collapse:collapse;font-size:12px}
+        .lots-table th,.lots-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+        .lots-table th{background:var(--bg);font-size:10px;font-weight:600;color:var(--text-light);text-transform:uppercase}
+        .lots-table td.number{text-align:right;font-family:'Inter',monospace;font-weight:500}
+        .lots-table tr.total-row{background:#EEF2FF;font-weight:600}
+        .lots-table tr.grand-total{background:var(--primary);color:white}
+        .lots-table .positive{color:var(--secondary)}
+        .lots-table .negative{color:var(--danger)}
+        .gauge-container{display:flex;flex-direction:column;align-items:center;padding:24px;background:linear-gradient(135deg,#EEF2FF,#F8FAFC);border-radius:var(--radius)}
+        .gauge-label{font-size:14px;font-weight:600;margin-bottom:16px}
+        .gauge{width:180px;height:90px;position:relative;overflow:hidden}
+        .gauge-bg{width:180px;height:90px;border-radius:90px 90px 0 0;background:linear-gradient(90deg,#EF4444 0%,#F59E0B 50%,#10B981 100%)}
+        .gauge-needle{position:absolute;bottom:0;left:50%;width:4px;height:70px;background:var(--primary);transform-origin:bottom center;transform:translateX(-50%) rotate(-90deg);transition:transform .8s;border-radius:2px}
+        .gauge-center{position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:20px;height:20px;background:var(--primary);border-radius:50%;border:3px solid white}
+        .gauge-value{font-size:28px;font-weight:800;color:var(--primary);margin-top:16px}
+        .gauge-scale{display:flex;justify-content:space-between;width:180px;margin-top:8px;font-size:10px;color:var(--text-light)}
+        .conseil{padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;font-size:13px}
+        .conseil i{font-size:16px;margin-top:2px}
+        .conseil-content{flex:1}
+        .conseil-title{font-weight:600;margin-bottom:2px}
+        .conseil-text{font-size:12px;opacity:.9}
+        .conseil-success{background:#D1FAE5;color:#065F46}
+        .conseil-warning{background:#FEF3C7;color:#92400E}
+        .conseil-danger{background:#FEE2E2;color:#991B1B}
+        .conseil-info{background:#DBEAFE;color:#1E40AF}
+        .repartition-bar{height:24px;border-radius:12px;overflow:hidden;display:flex;margin:12px 0}
+        .repartition-segment{height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;min-width:40px}
+        .repartition-legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:8px}
+        .legend-item{display:flex;align-items:center;gap:6px;font-size:12px}
+        .legend-dot{width:12px;height:12px;border-radius:4px}
+        .tabs{display:flex;gap:8px;margin-bottom:16px}
+        .tab{padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:white;transition:all .2s;font-family:inherit}
+        .tab.active{background:var(--primary);color:white;border-color:var(--primary)}
+        .associe-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+        .associe-card{background:white;border-radius:var(--radius-sm);padding:20px;text-align:center;border:2px solid var(--border)}
+        .associe-card .a-icon{font-size:28px;margin-bottom:8px}
+        .associe-card .a-label{font-size:12px;color:var(--text-light);margin-bottom:4px;font-weight:500}
+        .associe-card .a-pct{font-size:20px;font-weight:800;margin-bottom:6px}
+        .associe-card .a-gain{font-size:18px;font-weight:700}
+        .associe-card .a-desc{font-size:11px;color:var(--text-light);margin-top:6px}
+        .rep-bar{height:32px;border-radius:var(--radius-sm);overflow:hidden;display:flex;margin:16px 0}
+        .rep-bar .seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;transition:width .5s}
+        .pct-warning{background:#FEF3C7;color:#92400E;padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;margin-bottom:12px;text-align:center}
+        /* GO NO GO */
+        .gng-container{display:grid;grid-template-columns:200px 1fr;gap:24px;margin-bottom:24px}
+        .gng-circle{width:160px;height:160px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto;border:6px solid;transition:all .5s}
+        .gng-circle.go{border-color:#10B981;background:#ECFDF5}
+        .gng-circle.vigilance{border-color:#F59E0B;background:#FFFBEB}
+        .gng-circle.nogo{border-color:#EF4444;background:#FEF2F2}
+        .gng-circle .gng-score{font-size:36px;font-weight:800}
+        .gng-circle.go .gng-score{color:#059669}
+        .gng-circle.vigilance .gng-score{color:#D97706}
+        .gng-circle.nogo .gng-score{color:#DC2626}
+        .gng-circle .gng-label{font-size:14px;font-weight:700;margin-top:4px}
+        .gng-circle.go .gng-label{color:#059669}
+        .gng-circle.vigilance .gng-label{color:#D97706}
+        .gng-circle.nogo .gng-label{color:#DC2626}
+        .gng-detail{font-size:13px}
+        .gng-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+        .gng-bar-label{width:160px;text-align:right;color:var(--text-light);font-size:12px;font-weight:500}
+        .gng-bar-track{flex:1;height:10px;background:#E2E8F0;border-radius:5px;overflow:hidden}
+        .gng-bar-fill{height:100%;border-radius:5px;transition:width .5s}
+        .gng-bar-val{width:40px;font-weight:700;font-size:12px}
+        /* Pénibilité */
+        .penib-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:12px}
+        .penib-item{text-align:center}
+        .penib-item label{font-size:11px;color:var(--text-light);display:block;margin-bottom:6px;font-weight:500}
+        .penib-item select{width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;text-align:center;font-family:inherit;font-weight:600}
+        .empty-lots{text-align:center;padding:40px;color:var(--text-light)}
+        .empty-lots i{font-size:40px;margin-bottom:12px;opacity:.3}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="page-header">
+        <div style="display:flex;align-items:center;gap:16px;">
+            <h1><i class="fas fa-calculator"></i> Simulateur MDB</h1>
+            <span class="version-badge">v5.2</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="toggleDarkMode()" title="Mode clair / sombre"><i class="fas fa-moon"></i> Dark</button>
+            <button class="btn btn-secondary" onclick="openProjectsModal()"><i class="fas fa-folder-open"></i> Projets</button>
+            <button class="btn btn-secondary" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+            <button class="btn btn-secondary" onclick="resetForm()"><i class="fas fa-undo"></i> Reset</button>
+            <button class="btn btn-success" onclick="saveSimulation()"><i class="fas fa-save"></i> Sauvegarder</button>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- ============ GAUCHE ============ -->
+        <div>
+            <!-- ACQUISITION -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-home"></i> Acquisition</div></div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group"><label>Nom du projet</label><input type="text" id="nomProjet" value="Mon Projet MDB"></div>
+                        <div class="form-group"><label>Type d'opération</label>
+                            <select id="typeOperation"><option value="division_mixte">Division mixte</option><option value="division_terrain">Division parcellaire</option><option value="renovation">Rénovation</option><option value="achat_revente">Achat / Revente</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row triple">
+                        <div class="form-group"><label>Prix acquisition FAI</label><div class="input-suffix"><input type="number" id="prixAcquisition" value="350000" oninput="calc()"><span>€</span></div></div>
+                        <div class="form-group"><label>Frais notaire</label><div class="input-suffix"><input type="number" id="fraisNotairePct" value="8" step="0.1" oninput="calc()"><span>%</span></div></div>
+                        <div class="form-group"><label>Frais agence</label><div class="input-suffix"><input type="number" id="fraisAgence" value="0" oninput="calc()"><span>€</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FRAIS COMMUNS -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-coins"></i> Frais et Travaux Communs</div></div>
+                <div class="card-body">
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="fas fa-file-invoice"></i> Administratifs</div>
+                        <div class="form-row triple">
+                            <div class="form-group"><label>Géomètre</label><div class="input-suffix"><input type="number" id="fraisGeometre" value="3500" oninput="calc()"><span>€</span></div></div>
+                            <div class="form-group"><label>Urbanisme / DP</label><div class="input-suffix"><input type="number" id="fraisUrbanisme" value="1200" oninput="calc()"><span>€</span></div></div>
+                            <div class="form-group"><label>Autres frais admin</label><div class="input-suffix"><input type="number" id="autresFraisAdmin" value="0" oninput="calc()"><span>€</span></div></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="fas fa-hammer"></i> Travaux globaux</div>
+                        <div class="form-row"><div class="form-group"><label>Travaux intérieurs</label><div class="input-suffix"><input type="number" id="travauxInt" value="0" oninput="calc()"><span>€</span></div></div><div class="form-group"><label>Travaux extérieurs</label><div class="input-suffix"><input type="number" id="travauxExt" value="0" oninput="calc()"><span>€</span></div></div></div>
+                        <div class="form-row triple">
+                            <div class="form-group"><label>Architecte / BET</label><div class="input-suffix"><input type="number" id="archiGlobal" value="0" oninput="calc()"><span>€</span></div></div>
+                            <div class="form-group"><label>Assurances</label><div class="input-suffix"><input type="number" id="assurances" value="0" oninput="calc()"><span>€</span></div></div>
+                            <div class="form-group"><label>Aléas travaux</label><div class="input-suffix"><input type="number" id="aleasPct" value="5" oninput="calc()"><span>%</span></div></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="fas fa-bullhorn"></i> Commercialisation commune</div>
+                        <div class="form-row"><div class="form-group"><label>Commercialisation globale</label><div class="input-suffix"><input type="number" id="fraisCommercialisationGlobal" value="0" oninput="calc()"><span>€</span></div></div><div class="form-group"><label>Autres frais communs</label><div class="input-suffix"><input type="number" id="autresFraisCommuns" value="0" oninput="calc()"><span>€</span></div></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FINANCEMENT -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-percentage"></i> Financement / Portage</div></div>
+                <div class="card-body">
+                    <div class="form-row triple">
+                        <div class="form-group"><label>Apport</label><div class="input-suffix"><input type="number" id="apportPct" value="20" oninput="calc()"><span>%</span></div></div>
+                        <div class="form-group"><label>Taux crédit</label><div class="input-suffix"><input type="number" id="tauxCredit" value="4.5" step="0.1" oninput="calc()"><span>%</span></div></div>
+                        <div class="form-group"><label>Durée portage</label><div class="input-suffix"><input type="number" id="dureePortage" value="12" oninput="calc()"><span>mois</span></div></div>
+                    </div>
+                    <div class="form-row triple">
+                        <div class="form-group"><label>Assurance emprunt</label><div class="input-suffix"><input type="number" id="assuranceEmprunt" value="0" oninput="calc()"><span>€</span></div></div>
+                        <div class="form-group"><label>Frais de garantie</label><div class="input-suffix"><input type="number" id="fraisGarantie" value="0" oninput="calc()"><span>€</span></div></div>
+                        <div class="form-group"><label>Frais de dossier</label><div class="input-suffix"><input type="number" id="fraisDossier" value="0" oninput="calc()"><span>€</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOTS -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-layer-group"></i> Lots du Projet</div><button class="btn btn-primary btn-sm" onclick="addLot()"><i class="fas fa-plus"></i> Ajouter</button></div>
+                <div class="card-body">
+                    <div class="tabs"><div class="tab active" onclick="setRepMode('manuel')">Répartition manuelle</div><div class="tab" onclick="setRepMode('valeur')">Au prorata valeur</div></div>
+                    <div id="lots-container"></div>
+                    <div id="empty-lots" class="empty-lots" style="display:none;"><i class="fas fa-cubes"></i><h3>Aucun lot</h3></div>
+                </div>
+            </div>
+
+            <!-- PENIBILITE -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-clipboard-check"></i> Pénibilité & Durabilité du Projet</div></div>
+                <div class="card-body">
+                    <p style="font-size:12px;color:var(--text-light);margin-bottom:16px;"><i class="fas fa-info-circle"></i> Notez chaque critère de 1 (facile/faible risque) à 5 (difficile/fort risque). Ce score alimente le verdict GO / NO GO.</p>
+                    <div class="penib-grid">
+                        <div class="penib-item"><label>Complexité administrative</label><select id="penib1" onchange="calc()"><option value="1">1 – DP simple</option><option value="2" selected>2 – DP + division</option><option value="3">3 – PC standard</option><option value="4">4 – PC + ABF</option><option value="5">5 – Très complexe</option></select></div>
+                        <div class="penib-item"><label>Risque urbanistique</label><select id="penib2" onchange="calc()"><option value="1" selected>1 – Aucun risque</option><option value="2">2 – Faible</option><option value="3">3 – Moyen</option><option value="4">4 – Zone contrainte</option><option value="5">5 – Très risqué</option></select></div>
+                        <div class="penib-item"><label>Complexité travaux</label><select id="penib3" onchange="calc()"><option value="1">1 – Cosmétique</option><option value="2" selected>2 – Rafraîchissement</option><option value="3">3 – Rénovation</option><option value="4">4 – Gros œuvre</option><option value="5">5 – Structurel lourd</option></select></div>
+                        <div class="penib-item"><label>Nb intervenants</label><select id="penib4" onchange="calc()"><option value="1">1 – Solo</option><option value="2" selected>2 – 2-3 artisans</option><option value="3">3 – 4-5 corps</option><option value="4">4 – 6+ corps + MOE</option><option value="5">5 – Très complexe</option></select></div>
+                        <div class="penib-item"><label>Risque commercial</label><select id="penib5" onchange="calc()"><option value="1" selected>1 – Très demandé</option><option value="2">2 – Demandé</option><option value="3">3 – Moyen</option><option value="4">4 – Niche</option><option value="5">5 – Très niche</option></select></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPARTITION ASSOCIES -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-handshake"></i> Répartition Associés</div></div>
+                <div class="card-body">
+                    <div class="form-row triple">
+                        <div class="form-group"><label>🏗️ Porteur de projet</label><div class="input-suffix"><input type="number" id="pctPorteur" value="40" step="1" oninput="calc()"><span>%</span></div><small style="color:var(--text-light);font-size:11px;margin-top:4px;">Gère l'opération</small></div>
+                        <div class="form-group"><label>💰 Investisseur</label><div class="input-suffix"><input type="number" id="pctInvestisseur" value="50" step="1" oninput="calc()"><span>%</span></div><small style="color:var(--text-light);font-size:11px;margin-top:4px;">Met l'argent</small></div>
+                        <div class="form-group"><label>🤝 Apporteur d'affaires</label><div class="input-suffix"><input type="number" id="pctApporteur" value="10" step="1" oninput="calc()"><span>%</span></div><small style="color:var(--text-light);font-size:11px;margin-top:4px;">Fait le lien</small></div>
+                    </div>
+                    <div id="pct-warning" class="pct-warning" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ DROITE ============ -->
+        <div>
+            <!-- GO NO GO -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-traffic-light"></i> GO / NO GO</div></div>
+                <div class="card-body">
+                    <div class="gng-container">
+                        <div><div class="gng-circle" id="gng-circle"><div class="gng-score" id="gng-score">0</div><div class="gng-label" id="gng-label">—</div></div></div>
+                        <div class="gng-detail" id="gng-detail"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SYNTHESE -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-chart-pie"></i> Synthèse du Projet</div></div>
+                <div class="card-body">
+                    <div class="scenarios-grid">
+                        <div class="scenario-card pessimiste"><div class="scenario-label"><i class="fas fa-arrow-down"></i> Pessimiste</div><div class="scenario-prix" id="prix-pess">—</div><div class="scenario-marge" id="marge-pess">0 €</div><div class="scenario-roi" id="roi-pess">ROI: 0%</div></div>
+                        <div class="scenario-card realiste"><div class="scenario-label"><i class="fas fa-bullseye"></i> Réaliste</div><div class="scenario-prix" id="prix-real">—</div><div class="scenario-marge" id="marge-real">0 €</div><div class="scenario-roi" id="roi-real">ROI: 0%</div></div>
+                        <div class="scenario-card optimiste"><div class="scenario-label"><i class="fas fa-arrow-up"></i> Optimiste</div><div class="scenario-prix" id="prix-opti">—</div><div class="scenario-marge" id="marge-opti">0 €</div><div class="scenario-roi" id="roi-opti">ROI: 0%</div></div>
+                    </div>
+                    <div class="results-grid">
+                        <div class="result-card"><div class="result-label">Coût acquisition</div><div class="result-value" id="r-acq">0 €</div></div>
+                        <div class="result-card"><div class="result-label">Frais + travaux</div><div class="result-value" id="r-trav">0 €</div></div>
+                        <div class="result-card"><div class="result-label">Coût portage</div><div class="result-value" id="r-port">0 €</div></div>
+                        <div class="result-card"><div class="result-label">Invest. total</div><div class="result-value" id="r-total" style="color:var(--purple);">0 €</div></div>
+                    </div>
+                    <div id="detail-acq" class="detail-section"></div>
+                    <div id="detail-trav" class="detail-section"></div>
+                    <div id="detail-port" class="detail-section"></div>
+                    <div style="display:grid;grid-template-columns:220px 1fr;gap:24px;margin-bottom:24px;">
+                        <div class="gauge-container"><div class="gauge-label">ROI Réaliste</div><div class="gauge"><div class="gauge-bg"></div><div class="gauge-needle" id="gauge-needle"></div><div class="gauge-center"></div></div><div class="gauge-value" id="gauge-value">0%</div><div class="gauge-scale"><span>0%</span><span>15%</span><span>30%+</span></div></div>
+                        <div id="conseils-container"></div>
+                    </div>
+                    <div style="margin-bottom:24px;"><div style="font-size:13px;font-weight:600;margin-bottom:8px;">Répartition du CA</div><div class="repartition-bar" id="rep-bar"></div><div class="repartition-legend" id="rep-leg"></div></div>
+                    <div><div style="font-size:13px;font-weight:600;margin-bottom:12px;">Détail par lot</div><div style="overflow-x:auto;"><table class="lots-table"><thead><tr><th>Lot</th><th style="text-align:right;">Quote-part</th><th style="text-align:right;">Travaux</th><th style="text-align:right;">Commerc.</th><th style="text-align:right;">Coût total</th><th style="text-align:right;">Vente</th><th style="text-align:right;">Marge</th><th style="text-align:right;">ROI</th></tr></thead><tbody id="lots-tbody"></tbody></table></div></div>
+                </div>
+            </div>
+
+            <!-- REPARTITION ASSOCIES RESULT -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-handshake"></i> Répartition de la Marge</div></div>
+                <div class="card-body">
+                    <div style="font-size:13px;color:var(--text-light);margin-bottom:12px;">Marge nette réaliste : <strong id="rep-marge-lbl" style="color:var(--primary);">0 €</strong></div>
+                    <div class="rep-bar" id="rep-assoc-bar"></div>
+                    <div class="associe-grid" id="assoc-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let lots=[], lotId=0, repMode='manuel';
+let openLotIds=new Set();
+function syncOpenLotIdsFromDOM(){
+    try{
+        const openCards=document.querySelectorAll('.lot-card.open');
+        openLotIds=new Set(Array.from(openCards).map(c=>parseInt(c.getAttribute('data-lot-id'),10)).filter(n=>!isNaN(n)));
+    }catch(e){}
+}
+
+const LT={maison_renovation:{l:'Maison (réno)',i:'fa-house'},maison_existante:{l:'Maison (existante)',i:'fa-home'},terrain_nu:{l:'Terrain nu',i:'fa-mountain-sun'},terrain_projet:{l:'Terrain + projet',i:'fa-drafting-compass'},appartement:{l:'Appartement',i:'fa-building'}};
+const LS={a_vendre:{l:'À vendre',c:'en-vente'},en_travaux:{l:'En travaux',c:'travaux'},vendu:{l:'Vendu',c:'vendu'}};
+function f(n){return Math.round(n).toLocaleString('fr-FR')}
+function g(id,d=0){const e=document.getElementById(id);return e?(parseFloat(e.value)||d):d}
+
+// ===== LOT SCENARIOS =====
+// Each lot has: scenarioMode = 'pct' | 'prixm2' | 'fixe'
+// pct: prixPess/prixReal/prixOpti are % variations
+// prixm2: m2Pess/m2Real/m2Opti are price/m²
+// fixe: fixePess/fixeReal/fixeOpti are absolute prices
+
+function lotPrixScenario(lot, scenario) {
+    if (lot.statut === 'vendu' && lot.prixVenteReel) return lot.prixVenteReel;
+    const mode = lot.scenarioMode || 'pct';
+    if (mode === 'pct') {
+        const v = scenario === 'pess' ? (lot.pctPess ?? -10) : scenario === 'opti' ? (lot.pctOpti ?? 10) : (lot.pctReal ?? 0);
+        return (lot.prixVenteEstime || 0) * (1 + v / 100);
+    }
+    if (mode === 'prixm2') {
+        const m2 = scenario === 'pess' ? (lot.m2Pess ?? 0) : scenario === 'opti' ? (lot.m2Opti ?? 0) : (lot.m2Real ?? 0);
+        return m2 * (lot.surface || 0);
+    }
+    // fixe
+    return scenario === 'pess' ? (lot.fixePess ?? 0) : scenario === 'opti' ? (lot.fixeOpti ?? 0) : (lot.fixeReal ?? lot.prixVenteEstime ?? 0);
+}
+
+function addLot(preset) {
+    const id = ++lotId;
+    lots.push(preset || {id, nom:'Lot '+String.fromCharCode(64+lots.length+1), type:'maison_renovation', statut:'a_vendre', quotePartAcquisition:0, travaux:0, viabilisation:0, architecte:0, fraisVentePct:5, fraisCommercialisationLot:0, prixVenteEstime:0, prixVenteReel:null, surface:0, scenarioMode:'pct', pctPess:-10, pctReal:0, pctOpti:10, m2Pess:0, m2Real:0, m2Opti:0, fixePess:0, fixeReal:0, fixeOpti:0});
+    renderLots(); calc();
+}
+function removeLot(id){lots=lots.filter(l=>l.id!==id);renderLots();calc()}
+function updateLot(id,k,v){
+    const lot=lots.find(l=>l.id===id);
+    if(!lot)return;
+    const nums=['prixVenteEstime','prixVenteReel','quotePartAcquisition','travaux','viabilisation','architecte','surface','fraisVentePct','fraisCommercialisationLot','pctPess','pctReal','pctOpti','m2Pess','m2Real','m2Opti','fixePess','fixeReal','fixeOpti'];
+    lot[k]=nums.includes(k)?(parseFloat(v)||0):v;
+    // Conserver les lots ouverts (évite de devoir ré-ouvrir à chaque modif)
+    syncOpenLotIdsFromDOM();
+    renderLots();
+    calc();
+}
+function toggleLot(id){
+    const c=document.querySelector('[data-lot-id="'+id+'"]');
+    if(!c)return;
+    c.classList.toggle('open');
+    if(c.classList.contains('open')) openLotIds.add(id); else openLotIds.delete(id);
+}
+
+
+// ===== CALCULS =====
+function coutAcq(){const p=g('prixAcquisition');return p+p*(g('fraisNotairePct')/100)+g('fraisAgence')}
+function fraisCommuns(){
+    const admin=g('fraisGeometre')+g('fraisUrbanisme')+g('autresFraisAdmin');
+    const tBase=g('travauxInt')+g('travauxExt')+g('archiGlobal')+g('assurances');
+    const aleas=tBase*(g('aleasPct')/100);
+    const comm=g('fraisCommercialisationGlobal')+g('autresFraisCommuns');
+    return {admin,tBase,aleas,comm,total:admin+tBase+aleas+comm};
+}
+function coutPortage(invest){
+    const emp=invest*(1-g('apportPct')/100);
+    const int=emp*(g('tauxCredit')/100)*(g('dureePortage')/12);
+    const ass=g('assuranceEmprunt'),gar=g('fraisGarantie'),dos=g('fraisDossier');
+    return {emp,int,ass,gar,dos,total:int+ass+gar+dos};
+}
+function calcLot(lot,scenario){
+    const px=lotPrixScenario(lot,scenario);
+    const fv=px*(lot.fraisVentePct/100);
+    const cl=lot.fraisCommercialisationLot||0;
+    const cout=lot.quotePartAcquisition+lot.travaux+(lot.viabilisation||0)+(lot.architecte||0);
+    const coutTot=cout+fv+cl;
+    return {px,fv,cl,cout,coutTot,marge:px-coutTot};
+}
+function scenario(sc){
+    const ca=coutAcq(), fc=fraisCommuns();
+    let tVentes=0,tFV=0,tCL=0;
+    lots.forEach(l=>{const c=calcLot(l,sc);tVentes+=c.px;tFV+=c.fv;tCL+=c.cl});
+    const tLots=lots.reduce((s,l)=>s+l.travaux+(l.viabilisation||0)+(l.architecte||0),0);
+    const investAvant=ca+fc.total+tLots;
+    const port=coutPortage(investAvant);
+    const invest=investAvant+port.total;
+    const coutComplet=invest+tFV+tCL;
+    const marge=tVentes-coutComplet;
+    const roi=coutComplet>0?(marge/coutComplet)*100:0;
+    return {tVentes,tFV,tCL,invest,coutComplet,port,marge,roi,ca,fc,tLots};
+}
+
+// ===== GO NO GO =====
+function calcGoNoGo(sReal,sPess){
+    const roiR=sReal.roi, roiP=sPess.roi;
+    const duree=g('dureePortage');
+    const penib=(g('penib1')+g('penib2')+g('penib3')+g('penib4')+g('penib5'))/5;
+    const ratioFin=sReal.marge>0?(sReal.port.total/sReal.marge)*100:100;
+    const ecart=roiR>0?Math.abs(roiR-roiP)/roiR*100:100;
+
+    // scores 0-100
+    const sROI=roiR>=25?100:roiR>=18?50+((roiR-18)/7)*50:roiR>=10?(roiR/18)*50:0;
+    const sROIP=roiP>=10?100:roiP>=5?50+((roiP-5)/5)*50:roiP>=0?(roiP/5)*50:0;
+    const sEcart=ecart<=30?100:ecart<=50?50+((50-ecart)/20)*50:ecart<=80?(80-ecart)/30*50:0;
+    const sPenib=Math.max(0,(5-penib)/4*100);
+    const sDuree=duree<=12?100:duree<=18?50+((18-duree)/6)*50:duree<=24?(24-duree)/6*50:0;
+    const sFin=ratioFin<=15?100:ratioFin<=30?50+((30-ratioFin)/15)*50:ratioFin<=50?(50-ratioFin)/20*50:0;
+
+    const total=sROI*.30+sROIP*.20+sEcart*.15+sPenib*.15+sDuree*.10+sFin*.10;
+    const verdict=total>=70?'go':total>=50?'vigilance':'nogo';
+    const label=total>=70?'GO':total>=50?'VIGILANCE':'NO GO';
+
+    return {total:Math.round(total),verdict,label,details:[
+        {l:'ROI réaliste ('+roiR.toFixed(1)+'%)',v:Math.round(sROI),w:30,c:sROI>=70?'#10B981':sROI>=50?'#F59E0B':'#EF4444'},
+        {l:'ROI pessimiste ('+roiP.toFixed(1)+'%)',v:Math.round(sROIP),w:20,c:sROIP>=70?'#10B981':sROIP>=50?'#F59E0B':'#EF4444'},
+        {l:'Marge de sécurité',v:Math.round(sEcart),w:15,c:sEcart>=70?'#10B981':sEcart>=50?'#F59E0B':'#EF4444'},
+        {l:'Pénibilité ('+penib.toFixed(1)+'/5)',v:Math.round(sPenib),w:15,c:sPenib>=70?'#10B981':sPenib>=50?'#F59E0B':'#EF4444'},
+        {l:'Durée ('+duree+' mois)',v:Math.round(sDuree),w:10,c:sDuree>=70?'#10B981':sDuree>=50?'#F59E0B':'#EF4444'},
+        {l:'Ratio frais fin./marge',v:Math.round(sFin),w:10,c:sFin>=70?'#10B981':sFin>=50?'#F59E0B':'#EF4444'},
+    ]};
+}
+
+// ===== RENDER =====
+function setRepMode(m){repMode=m;document.querySelectorAll('.tabs .tab').forEach((t,i)=>{t.classList.toggle('active',(i===0&&m==='manuel')||(i===1&&m==='valeur'))});if(m==='valeur')reCalcQP();renderLots();calc()}
+function reCalcQP(){const ca=coutAcq();const tv=lots.reduce((s,l)=>s+(l.prixVenteEstime||0),0);if(tv>0)lots.forEach(l=>{l.quotePartAcquisition=Math.round((l.prixVenteEstime/tv)*ca)})}
+
+function renderLots(){
+    syncOpenLotIdsFromDOM();
+    const ct=document.getElementById('lots-container'),em=document.getElementById('empty-lots');
+    if(!lots.length){ct.innerHTML='';em.style.display='block';return}
+    em.style.display='none';
+    let h='';
+    lots.forEach(lot=>{
+        const tp=LT[lot.type],st=LS[lot.statut];
+        const {marge}=calcLot(lot,'real');
+        const cc=lot.statut==='vendu'?'vendu':lot.type.includes('terrain')?'terrain':'renovation';
+        const sm=lot.scenarioMode||'pct';
+        h+=`<div class="lot-card ${cc} ${openLotIds.has(lot.id)?'open':''}" data-lot-id="${lot.id}">
+            <div class="lot-header" onclick="toggleLot(${lot.id})">
+                <div class="lot-title"><div class="lot-icon"><i class="fas ${tp.i}"></i></div><div class="lot-info"><h4>${lot.nom}</h4><span>${tp.l}</span></div></div>
+                <div class="lot-summary"><span class="status-badge ${st.c}">${st.l}</span><div class="lot-stat"><div class="lot-stat-value ${marge>=0?'positive':'negative'}">${marge>=0?'+':''}${f(marge)} €</div><div class="lot-stat-label">Marge réaliste</div></div><button class="btn btn-icon btn-secondary" onclick="event.stopPropagation();removeLot(${lot.id})" title="Supprimer"><i class="fas fa-trash"></i></button><i class="fas fa-chevron-down lot-toggle"></i></div>
+            </div>
+            <div class="lot-body">
+                <div class="lot-row double">
+                    <div class="form-group"><label>Nom du lot</label><input type="text" value="${lot.nom}" onchange="updateLot(${lot.id},'nom',this.value)"></div>
+                    <div class="form-group"><label>Type</label><select onchange="updateLot(${lot.id},'type',this.value)">${Object.entries(LT).map(([k,v])=>`<option value="${k}" ${lot.type===k?'selected':''}>${v.l}</option>`).join('')}</select></div>
+                </div>
+                <div class="lot-row">
+                    <div class="form-group"><label>Quote-part acquisition</label><div class="input-suffix"><input type="number" value="${lot.quotePartAcquisition}" onchange="updateLot(${lot.id},'quotePartAcquisition',this.value)" ${repMode!=='manuel'?'readonly style="background:#f1f5f9;"':''}><span>€</span></div></div>
+                    <div class="form-group"><label>Surface</label><div class="input-suffix"><input type="number" value="${lot.surface||''}" onchange="updateLot(${lot.id},'surface',this.value)"><span>m²</span></div></div>
+                    <div class="form-group"><label>Statut</label><select onchange="updateLot(${lot.id},'statut',this.value)">${Object.entries(LS).map(([k,v])=>`<option value="${k}" ${lot.statut===k?'selected':''}>${v.l}</option>`).join('')}</select></div>
+                </div>
+                <div class="lot-row">
+                    <div class="form-group"><label>Travaux lot</label><div class="input-suffix"><input type="number" value="${lot.travaux}" onchange="updateLot(${lot.id},'travaux',this.value)"><span>€</span></div></div>
+                    <div class="form-group"><label>Viabilisation</label><div class="input-suffix"><input type="number" value="${lot.viabilisation||''}" onchange="updateLot(${lot.id},'viabilisation',this.value)"><span>€</span></div></div>
+                    <div class="form-group"><label>Architecte lot</label><div class="input-suffix"><input type="number" value="${lot.architecte||''}" onchange="updateLot(${lot.id},'architecte',this.value)"><span>€</span></div></div>
+                </div>
+                <div class="lot-row">
+                    <div class="form-group"><label>Prix vente estimé</label><div class="input-suffix"><input type="number" value="${lot.prixVenteEstime}" onchange="updateLot(${lot.id},'prixVenteEstime',this.value)"><span>€</span></div></div>
+                    <div class="form-group"><label>Prix vente réel</label><div class="input-suffix"><input type="number" value="${lot.prixVenteReel||''}" onchange="updateLot(${lot.id},'prixVenteReel',this.value)" placeholder="Non vendu"><span>€</span></div></div>
+                    <div class="form-group"><label>Frais vente (%)</label><div class="input-suffix"><input type="number" value="${lot.fraisVentePct}" step="0.5" onchange="updateLot(${lot.id},'fraisVentePct',this.value)"><span>%</span></div></div>
+                </div>
+                <div class="lot-row double">
+                    <div class="form-group"><label>🏷️ Frais commercialisation (lot)</label><div class="input-suffix"><input type="number" value="${lot.fraisCommercialisationLot||0}" onchange="updateLot(${lot.id},'fraisCommercialisationLot',this.value)"><span>€</span></div></div>
+                </div>
+                <div style="background:#EEF2FF;border-radius:10px;padding:14px;margin-top:8px;">
+                    <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:10px;"><i class="fas fa-chart-line"></i> Scénarios de ce lot</div>
+                    <div class="form-row triple" style="margin-bottom:10px;">
+                        <div class="form-group"><label>Mode scénario</label><select onchange="updateLot(${lot.id},'scenarioMode',this.value)"><option value="pct" ${sm==='pct'?'selected':''}>Variation %</option><option value="prixm2" ${sm==='prixm2'?'selected':''}>Prix / m²</option><option value="fixe" ${sm==='fixe'?'selected':''}>Prix fixe</option></select></div>
+                    </div>
+                    ${sm==='pct'?`<div class="lot-row triple">
+                        <div class="form-group"><label style="color:#DC2626;font-size:12px;">📉 Pessimiste</label><div class="input-suffix"><input type="number" value="${lot.pctPess??-10}" onchange="updateLot(${lot.id},'pctPess',this.value)"><span>%</span></div></div>
+                        <div class="form-group"><label style="color:#D97706;font-size:12px;">🎯 Réaliste</label><div class="input-suffix"><input type="number" value="${lot.pctReal??0}" onchange="updateLot(${lot.id},'pctReal',this.value)"><span>%</span></div></div>
+                        <div class="form-group"><label style="color:#059669;font-size:12px;">📈 Optimiste</label><div class="input-suffix"><input type="number" value="${lot.pctOpti??10}" onchange="updateLot(${lot.id},'pctOpti',this.value)"><span>%</span></div></div>
+                    </div>`:''}
+                    ${sm==='prixm2'?`<div class="lot-row triple">
+                        <div class="form-group"><label style="color:#DC2626;font-size:12px;">📉 Pessimiste /m²</label><div class="input-suffix"><input type="number" value="${lot.m2Pess||''}" onchange="updateLot(${lot.id},'m2Pess',this.value)"><span>€</span></div></div>
+                        <div class="form-group"><label style="color:#D97706;font-size:12px;">🎯 Réaliste /m²</label><div class="input-suffix"><input type="number" value="${lot.m2Real||''}" onchange="updateLot(${lot.id},'m2Real',this.value)"><span>€</span></div></div>
+                        <div class="form-group"><label style="color:#059669;font-size:12px;">📈 Optimiste /m²</label><div class="input-suffix"><input type="number" value="${lot.m2Opti||''}" onchange="updateLot(${lot.id},'m2Opti',this.value)"><span>€</span></div></div>
+                    </div><div style="font-size:11px;color:var(--text-light);">= Pess: ${f(lotPrixScenario(lot,'pess'))}€ | Réal: ${f(lotPrixScenario(lot,'real'))}€ | Opti: ${f(lotPrixScenario(lot,'opti'))}€</div>`:''}
+                    ${sm==='fixe'?`<div class="lot-row triple">
+                        <div class="form-group"><label style="color:#DC2626;font-size:12px;">📉 Prix pessimiste</label><div class="input-suffix"><input type="number" value="${lot.fixePess||''}" onchange="updateLot(${lot.id},'fixePess',this.value)"><span>€</span></div></div>
+                        <div class="form-group"><label style="color:#D97706;font-size:12px;">🎯 Prix réaliste</label><div class="input-suffix"><input type="number" value="${lot.fixeReal||lot.prixVenteEstime||''}" onchange="updateLot(${lot.id},'fixeReal',this.value)"><span>€</span></div></div>
+                        <div class="form-group"><label style="color:#059669;font-size:12px;">📈 Prix optimiste</label><div class="input-suffix"><input type="number" value="${lot.fixeOpti||''}" onchange="updateLot(${lot.id},'fixeOpti',this.value)"><span>€</span></div></div>
+                    </div>`:''}
+                </div>
+            </div>
+        </div>`;
+    });
+    ct.innerHTML=h;
+}
+
+// ===== CONSEILS =====
+function conseils(s){
+    const c=[];
+    if(s.roi>=25)c.push({t:'success',i:'fa-trophy',ti:'Excellente opération !',tx:'ROI de '+s.roi.toFixed(1)+'% — Rentabilité exceptionnelle.'});
+    else if(s.roi>=18)c.push({t:'success',i:'fa-check-circle',ti:'Bonne opération',tx:'ROI de '+s.roi.toFixed(1)+'% — Au-dessus du seuil minimum (18%).'});
+    else if(s.roi>=10)c.push({t:'warning',i:'fa-exclamation-triangle',ti:'Sous le seuil minimum',tx:'ROI de '+s.roi.toFixed(1)+'% — En dessous des 18% recommandés.'});
+    else if(s.roi>0)c.push({t:'danger',i:'fa-times-circle',ti:'Rentabilité insuffisante',tx:'ROI de '+s.roi.toFixed(1)+'% — Loin du seuil de 18-25%.'});
+    else c.push({t:'danger',i:'fa-ban',ti:'Déficitaire !',tx:'Perte de '+f(Math.abs(s.marge))+' €'});
+    const fr=s.invest>0?(s.fc.total/s.invest)*100:0;
+    if(fr>15)c.push({t:'warning',i:'fa-search-dollar',ti:'Frais communs élevés',tx:fr.toFixed(1)+'% de l\'investissement.'});
+    if(s.port.total>0&&s.marge>0&&s.port.total/s.marge>.3)c.push({t:'info',i:'fa-clock',ti:'Portage coûteux',tx:'Les frais financiers mangent '+((s.port.total/s.marge)*100).toFixed(0)+'% de la marge.'});
+    return c;
+}
+
+// ===== MAIN CALC =====
+function calc(){
+    if(repMode==='valeur')reCalcQP();
+    const sP=scenario('pess'),sR=scenario('real'),sO=scenario('opti');
+
+    // Scénarios
+    document.getElementById('prix-pess').textContent=f(sP.tVentes)+' €';
+    document.getElementById('marge-pess').textContent=(sP.marge>=0?'+':'')+f(sP.marge)+' €';
+    document.getElementById('roi-pess').textContent='ROI: '+sP.roi.toFixed(1)+'%';
+    document.getElementById('prix-real').textContent=f(sR.tVentes)+' €';
+    document.getElementById('marge-real').textContent=(sR.marge>=0?'+':'')+f(sR.marge)+' €';
+    document.getElementById('roi-real').textContent='ROI: '+sR.roi.toFixed(1)+'%';
+    document.getElementById('prix-opti').textContent=f(sO.tVentes)+' €';
+    document.getElementById('marge-opti').textContent=(sO.marge>=0?'+':'')+f(sO.marge)+' €';
+    document.getElementById('roi-opti').textContent='ROI: '+sO.roi.toFixed(1)+'%';
+
+    // KPIs
+    document.getElementById('r-acq').textContent=f(sR.ca)+' €';
+    document.getElementById('r-trav').textContent=f(sR.fc.total+sR.tLots)+' €';
+    document.getElementById('r-port').textContent=f(sR.port.total)+' €';
+    document.getElementById('r-total').textContent=f(sR.coutComplet)+' €';
+
+    // Détails
+    const pA=g('prixAcquisition'),not=pA*(g('fraisNotairePct')/100);
+    document.getElementById('detail-acq').innerHTML=`<div class="detail-section-title"><i class="fas fa-home"></i> Détail Acquisition</div><div class="detail-row"><span class="lbl">Prix acquisition FAI</span><span class="val">${f(pA)} €</span></div><div class="detail-row"><span class="lbl">Frais notaire (${g('fraisNotairePct')}%)</span><span class="val">${f(not)} €</span></div><div class="detail-row"><span class="lbl">Frais agence</span><span class="val">${f(g('fraisAgence'))} €</span></div><div class="detail-row total"><span>TOTAL ACQUISITION</span><span class="val">${f(sR.ca)} €</span></div>`;
+
+    const fc=sR.fc;
+    document.getElementById('detail-trav').innerHTML=`<div class="detail-section-title"><i class="fas fa-hammer"></i> Détail Frais & Travaux</div><div class="detail-row"><span class="lbl">Géomètre</span><span class="val">${f(g('fraisGeometre'))} €</span></div><div class="detail-row"><span class="lbl">Urbanisme</span><span class="val">${f(g('fraisUrbanisme'))} €</span></div><div class="detail-row"><span class="lbl">Autres admin</span><span class="val">${f(g('autresFraisAdmin'))} €</span></div><div class="detail-row"><span class="lbl">Travaux int.</span><span class="val">${f(g('travauxInt'))} €</span></div><div class="detail-row"><span class="lbl">Travaux ext.</span><span class="val">${f(g('travauxExt'))} €</span></div><div class="detail-row"><span class="lbl">Architecte/BET</span><span class="val">${f(g('archiGlobal'))} €</span></div><div class="detail-row"><span class="lbl">Assurances</span><span class="val">${f(g('assurances'))} €</span></div><div class="detail-row"><span class="lbl">Aléas (${g('aleasPct')}%)</span><span class="val">${f(fc.aleas)} €</span></div><div class="detail-row"><span class="lbl">Commercialisation globale</span><span class="val">${f(g('fraisCommercialisationGlobal'))} €</span></div><div class="detail-row"><span class="lbl">Autres frais communs</span><span class="val">${f(g('autresFraisCommuns'))} €</span></div><div class="detail-row"><span class="lbl">Travaux par lots</span><span class="val">${f(sR.tLots)} €</span></div><div class="detail-row total"><span>TOTAL FRAIS + TRAVAUX</span><span class="val">${f(fc.total+sR.tLots)} €</span></div>`;
+
+    const p=sR.port;
+    document.getElementById('detail-port').innerHTML=`<div class="detail-section-title"><i class="fas fa-university"></i> Détail Portage</div><div class="detail-row"><span class="lbl">Montant emprunté (${100-g('apportPct')}%)</span><span class="val">${f(p.emp)} €</span></div><div class="detail-row"><span class="lbl">Intérêts (${g('tauxCredit')}% × ${g('dureePortage')} mois)</span><span class="val">${f(p.int)} €</span></div><div class="detail-row"><span class="lbl">Assurance emprunt</span><span class="val">${f(p.ass)} €</span></div><div class="detail-row"><span class="lbl">Frais garantie</span><span class="val">${f(p.gar)} €</span></div><div class="detail-row"><span class="lbl">Frais dossier</span><span class="val">${f(p.dos)} €</span></div><div class="detail-row total"><span>TOTAL PORTAGE</span><span class="val">${f(p.total)} €</span></div>`;
+
+    // Gauge
+    const angle=Math.min(Math.max((sR.roi/30)*180-90,-90),90);
+    document.getElementById('gauge-needle').style.transform='translateX(-50%) rotate('+angle+'deg)';
+    document.getElementById('gauge-value').textContent=sR.roi.toFixed(1)+'%';
+
+    // Conseils
+    const cs=conseils(sR);
+    document.getElementById('conseils-container').innerHTML=cs.map(c=>`<div class="conseil conseil-${c.t}"><i class="fas ${c.i}"></i><div class="conseil-content"><div class="conseil-title">${c.ti}</div><div class="conseil-text">${c.tx}</div></div></div>`).join('');
+
+    // Répartition CA
+    const colors=['#8B5CF6','#6366F1','#F59E0B','#D97706','#0EA5E9','#10B981'];
+    let bH='',lH='';
+    if(sR.tVentes>0){lots.forEach((lot,i)=>{const c=calcLot(lot,'real');const pct=(c.px/sR.tVentes)*100;const col=colors[i%colors.length];bH+=`<div class="repartition-segment" style="width:${pct}%;background:${col};">${pct.toFixed(0)}%</div>`;lH+=`<div class="legend-item"><div class="legend-dot" style="background:${col};"></div>${lot.nom}: ${f(c.px)} €</div>`})}
+    document.getElementById('rep-bar').innerHTML=bH;
+    document.getElementById('rep-leg').innerHTML=lH;
+
+    // Table
+    let tb='',tQ=0,tT=0,tC=0,tCt=0,tV=0,tM=0;
+    lots.forEach(lot=>{
+        const c=calcLot(lot,'real');
+        const tLot=lot.travaux+(lot.viabilisation||0)+(lot.architecte||0);
+        const roi=c.coutTot>0?((c.marge/c.coutTot)*100):0;
+        tQ+=lot.quotePartAcquisition;tT+=tLot;tC+=c.fv+c.cl;tCt+=c.coutTot;tV+=c.px;tM+=c.marge;
+        tb+=`<tr><td><strong>${lot.nom}</strong><br><span style="font-size:10px;color:var(--text-light);">${LT[lot.type].l}</span></td><td class="number">${f(lot.quotePartAcquisition)} €</td><td class="number">${f(tLot)} €</td><td class="number">${f(c.fv+c.cl)} €</td><td class="number">${f(c.coutTot)} €</td><td class="number">${f(c.px)} €</td><td class="number ${c.marge>=0?'positive':'negative'}">${c.marge>=0?'+':''}${f(c.marge)} €</td><td class="number">${roi.toFixed(1)}%</td></tr>`;
+    });
+    if(lots.length){
+        tb+=`<tr class="total-row"><td><strong>SOUS-TOTAL</strong></td><td class="number">${f(tQ)} €</td><td class="number">${f(tT)} €</td><td class="number">${f(tC)} €</td><td class="number">${f(tCt)} €</td><td class="number">${f(tV)} €</td><td class="number ${tM>=0?'positive':'negative'}">${tM>=0?'+':''}${f(tM)} €</td><td></td></tr>`;
+        tb+=`<tr><td colspan="4">Frais communs</td><td class="number">${f(fc.total)} €</td><td></td><td class="number negative">-${f(fc.total)} €</td><td></td></tr>`;
+        tb+=`<tr><td colspan="4">Portage (${g('dureePortage')}m à ${g('tauxCredit')}%)</td><td class="number">${f(p.total)} €</td><td></td><td class="number negative">-${f(p.total)} €</td><td></td></tr>`;
+        tb+=`<tr class="grand-total"><td colspan="4"><strong>TOTAL PROJET</strong></td><td class="number">${f(sR.coutComplet)} €</td><td class="number">${f(sR.tVentes)} €</td><td class="number">${sR.marge>=0?'+':''}${f(sR.marge)} €</td><td class="number">${sR.roi.toFixed(1)}%</td></tr>`;
+    }
+    document.getElementById('lots-tbody').innerHTML=tb;
+
+    // GO NO GO
+    const gng=calcGoNoGo(sR,sP);
+    const gc=document.getElementById('gng-circle');gc.className='gng-circle '+gng.verdict;
+    document.getElementById('gng-score').textContent=gng.total;
+    document.getElementById('gng-label').textContent=gng.label;
+    document.getElementById('gng-detail').innerHTML=gng.details.map(d=>`<div class="gng-bar-row"><div class="gng-bar-label">${d.l} <span style="color:var(--text-light);font-size:10px;">(${d.w}%)</span></div><div class="gng-bar-track"><div class="gng-bar-fill" style="width:${d.v}%;background:${d.c};"></div></div><div class="gng-bar-val" style="color:${d.c};">${d.v}</div></div>`).join('');
+
+    // Répartition associés
+    const pctP=g('pctPorteur'),pctI=g('pctInvestisseur'),pctA=g('pctApporteur');
+    const totPct=pctP+pctI+pctA;
+    const w=document.getElementById('pct-warning');
+    if(Math.abs(totPct-100)>.1){w.style.display='block';w.innerHTML='<i class="fas fa-exclamation-triangle"></i> Total: '+totPct.toFixed(0)+'% — doit être 100%'}else{w.style.display='none'}
+    const marge=sR.marge;
+    const gP=marge*(pctP/100),gI=marge*(pctI/100),gA=marge*(pctA/100);
+    document.getElementById('rep-marge-lbl').textContent=(marge>=0?'+':'')+f(marge)+' €';
+    document.getElementById('rep-marge-lbl').style.color=marge>=0?'var(--secondary)':'var(--danger)';
+    document.getElementById('rep-assoc-bar').innerHTML=`<div class="seg" style="width:${pctP}%;background:var(--purple);">${pctP}%</div><div class="seg" style="width:${pctI}%;background:var(--primary);">${pctI}%</div><div class="seg" style="width:${pctA}%;background:var(--accent);">${pctA}%</div>`;
+    document.getElementById('assoc-grid').innerHTML=`
+        <div class="associe-card" style="border-color:var(--purple);"><div class="a-icon">🏗️</div><div class="a-label">Porteur de projet</div><div class="a-pct" style="color:var(--purple);">${pctP}%</div><div class="a-gain" style="color:${gP>=0?'var(--secondary)':'var(--danger)'};">${gP>=0?'+':''}${f(gP)} €</div><div class="a-desc">Gère l'opération</div></div>
+        <div class="associe-card" style="border-color:var(--primary);"><div class="a-icon">💰</div><div class="a-label">Investisseur</div><div class="a-pct" style="color:var(--primary);">${pctI}%</div><div class="a-gain" style="color:${gI>=0?'var(--secondary)':'var(--danger)'};">${gI>=0?'+':''}${f(gI)} €</div><div class="a-desc">Met l'argent</div></div>
+        <div class="associe-card" style="border-color:var(--accent);"><div class="a-icon">🤝</div><div class="a-label">Apporteur d'affaires</div><div class="a-pct" style="color:var(--accent);">${pctA}%</div><div class="a-gain" style="color:${gA>=0?'var(--secondary)':'var(--danger)'};">${gA>=0?'+':''}${f(gA)} €</div><div class="a-desc">Fait le lien</div></div>`;
+}
+
+// ===== RESET =====
+function resetForm(){
+    lots=[];lotId=0;
+    addLot({id:++lotId,nom:'Maison mitoyenne Gauche',type:'maison_renovation',statut:'a_vendre',quotePartAcquisition:180000,travaux:45000,viabilisation:0,architecte:0,fraisVentePct:5,fraisCommercialisationLot:0,prixVenteEstime:280000,prixVenteReel:null,surface:85,scenarioMode:'pct',pctPess:-10,pctReal:0,pctOpti:10,m2Pess:0,m2Real:0,m2Opti:0,fixePess:0,fixeReal:0,fixeOpti:0});
+    addLot({id:++lotId,nom:'Maison mitoyenne Droite',type:'maison_renovation',statut:'a_vendre',quotePartAcquisition:120000,travaux:35000,viabilisation:0,architecte:0,fraisVentePct:5,fraisCommercialisationLot:0,prixVenteEstime:240000,prixVenteReel:null,surface:70,scenarioMode:'pct',pctPess:-10,pctReal:0,pctOpti:10,m2Pess:0,m2Real:0,m2Opti:0,fixePess:0,fixeReal:0,fixeOpti:0});
+    addLot({id:++lotId,nom:'Terrain 450m² + projet',type:'terrain_projet',statut:'vendu',quotePartAcquisition:50000,travaux:0,viabilisation:12000,architecte:5000,fraisVentePct:5,fraisCommercialisationLot:0,prixVenteEstime:95000,prixVenteReel:92000,surface:450,scenarioMode:'fixe',pctPess:-10,pctReal:0,pctOpti:10,m2Pess:0,m2Real:0,m2Opti:0,fixePess:85000,fixeReal:92000,fixeOpti:100000});
+}
+// ===== PROJETS (localStorage) =====
+const STORAGE_KEY = 'prealty_mdb_projects_v1';
+function getProjectName(){
+    const n=(document.getElementById('nomProjet')?.value||'').trim();
+    return n || 'Mon Projet MDB';
+}
+function collectFormState(){
+    const ids=[
+        'nomProjet','typeOperation','prixAcquisition','fraisNotairePct','fraisAgence',
+        'fraisGeometre','fraisUrbanisme','autresFraisAdmin',
+        'travauxInt','travauxExt','archiGlobal','assurances','aleasPct',
+        'fraisCommercialisationGlobal','autresFraisCommuns',
+        'apportPct','tauxCredit','dureePortage','assuranceEmprunt','fraisGarantie','fraisDossier',
+        'penib1','penib2','penib3','penib4','penib5',
+        'pctPorteur','pctInvestisseur','pctApporteur'
+    ];
+    const values={};
+    ids.forEach(id=>{
+        const el=document.getElementById(id);
+        if(!el) return;
+        values[id]=(el.tagName==='SELECT')?el.value:el.value;
+    });
+    return {values, lots, lotId, repMode, dark:document.body.classList.contains('dark'), savedAt:new Date().toISOString()};
+}
+function applyFormState(state){
+    if(!state) return;
+    const {values}=state;
+    if(values){
+        Object.entries(values).forEach(([id,val])=>{
+            const el=document.getElementById(id);
+            if(!el) return;
+            el.value=val;
+        });
+    }
+    lots=Array.isArray(state.lots)?state.lots:[];
+    lotId=state.lotId||0;
+    repMode=state.repMode||'manuel';
+    setRepMode(repMode);
+    document.body.classList.toggle('dark', !!state.dark);
+    localStorage.setItem('prealty_dark', state.dark?'1':'0');
+    renderLots(); calc();
+}
+function readProjects(){
+    try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{}}catch(e){return {}}
+}
+function writeProjects(obj){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+}
+function saveSimulation(){
+    const projects=readProjects();
+    let name=getProjectName();
+    // si le nom existe déjà, on écrase (simple + efficace)
+    const st=collectFormState(); st.__savedAt=Date.now(); projects[name]=st;
+    writeProjects(projects);
+    alert('✅ Projet sauvegardé : '+name);
+}
+function loadSimulation(){
+    const projects=readProjects();
+    const names=Object.keys(projects);
+    if(!names.length){
+        alert("Aucun projet sauvegardé pour l'instant.\n\nClique sur Sauvegarder pour créer le premier.");
+        return;
+    }
+    const list=names.map((n,i)=>`${i+1}. ${n}`).join('\n');
+    const pick=prompt("Quel projet charger ?\n\n"+list+"\n\nTape le numéro (ex: 1) ou le nom exact :", "1");
+    if(pick===null) return;
+    let chosen=null;
+    const idx=parseInt(pick,10);
+    if(!isNaN(idx) && idx>=1 && idx<=names.length) chosen=names[idx-1];
+    else{
+        const match=names.find(n=>n.toLowerCase()===String(pick).trim().toLowerCase());
+        chosen=match||null;
+    }
+    if(!chosen){ alert("Projet introuvable."); return; }
+    applyFormState(projects[chosen]);
+    alert('📂 Projet chargé : '+chosen);
+}
+
+
+// ===== PROJETS : UI LISTE + SUPPRESSION =====
+function openProjectsModal(){
+    renderProjectsModal();
+    const ov=document.getElementById('projectsModal');
+    ov.classList.add('open');
+    ov.setAttribute('aria-hidden','false');
+}
+function closeProjectsModal(){
+    const ov=document.getElementById('projectsModal');
+    ov.classList.remove('open');
+    ov.setAttribute('aria-hidden','true');
+}
+function renderProjectsModal(){
+    const projects=readProjects();
+    const names=Object.keys(projects).sort((a,b)=>a.localeCompare(b,'fr'));
+    const list=document.getElementById('projectsList');
+    const count=document.getElementById('projectsCount');
+    if(!names.length){
+        count.textContent="Aucun projet sauvegardé pour l’instant.";
+        list.innerHTML = `<div class="project-item"><div><div class="project-name">—</div><div class="project-meta">Clique sur “Sauvegarder” pour créer ton 1er projet.</div></div></div>`;
+        return;
+    }
+    count.textContent = `${names.length} projet(s) enregistré(s) sur cet appareil.`;
+    list.innerHTML = names.map(name=>{
+        const s=projects[name]||{};
+        const lots=(Array.isArray(s.lots)?s.lots.length:0);
+        const ts=s.__savedAt ? new Date(s.__savedAt) : null;
+        const meta = `${lots} lot(s)` + (ts?` · sauvegardé le ${ts.toLocaleDateString('fr-FR')} ${ts.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`:'');
+        return `
+        <div class="project-item">
+            <div style="min-width:0">
+                <div class="project-name">${escapeHtml(name)}</div>
+                <div class="project-meta">${escapeHtml(meta)}</div>
+            </div>
+            <div class="project-actions">
+                <button class="btn btn-secondary" type="button" onclick="loadProjectByName(${JSON.stringify(name)})"><i class="fas fa-download"></i> Charger</button>
+                <button class="btn btn-danger" type="button" onclick="deleteProject(${JSON.stringify(name)})"><i class="fas fa-trash"></i> Supprimer</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+function loadProjectByName(name){
+    const projects=readProjects();
+    if(!projects[name]){ alert("Projet introuvable."); return; }
+    applyFormState(projects[name]);
+    alert('📂 Projet chargé : '+name);
+    closeProjectsModal();
+}
+function deleteProject(name){
+    const projects=readProjects();
+    if(!projects[name]) return;
+    if(!confirm(`Supprimer définitivement le projet : "${name}" ?`)) return;
+    delete projects[name];
+    writeProjects(projects);
+    renderProjectsModal();
+}
+function deleteAllProjects(){
+    const projects=readProjects();
+    const n=Object.keys(projects).length;
+    if(!n){ alert("Aucun projet à supprimer."); return; }
+    if(!confirm(`Supprimer TOUS les projets (${n}) ?`)) return;
+    writeProjects({});
+    renderProjectsModal();
+}
+function exportProjects(){
+    const projects=readProjects();
+    const blob=new Blob([JSON.stringify(projects,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='prealty_projets.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+function importProjectsFile(ev){
+    const file=ev.target.files && ev.target.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+        try{
+            const incoming=JSON.parse(String(reader.result||'{}'))||{};
+            const projects=readProjects();
+            const merged={...projects, ...incoming};
+            writeProjects(merged);
+            alert("✅ Import terminé.");
+            renderProjectsModal();
+        }catch(e){
+            alert("Fichier invalide.");
+        }finally{
+            ev.target.value='';
+        }
+    };
+    reader.readAsText(file);
+}
+function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, (m)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+}
+
+// ===== DARK MODE =====
+function toggleDarkMode(){
+    const next=!document.body.classList.contains('dark');
+    document.body.classList.toggle('dark', next);
+    localStorage.setItem('prealty_dark', next?'1':'0');
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded',()=>{
+    // Thème
+    const d=localStorage.getItem('prealty_dark');
+    if(d==='1') document.body.classList.add('dark');
+
+    // Auto-charge du dernier projet (si tu veux), sinon reset
+    resetForm();
+    // si un projet du même nom existe, on le recharge automatiquement
+    const projects=readProjects();
+    const autoName=getProjectName();
+    if(projects[autoName]){
+        applyFormState(projects[autoName]);
+    }else{
+        renderLots(); calc();
+    }
+});
+</script>
+
+    <!-- Modal Projets -->
+    <div class="modal-overlay" id="projectsModal" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="projectsTitle">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="projectsTitle"><i class="fas fa-folder-open"></i> Projets sauvegardés</div>
+                    <div class="project-meta" id="projectsCount">—</div>
+                </div>
+                <button class="btn btn-secondary" type="button" onclick="closeProjectsModal()"><i class="fas fa-xmark"></i> Fermer</button>
+            </div>
+            <div class="modal-body">
+                <div class="hint">Astuce : un projet = tout l’état du formulaire (lots inclus). Tu peux charger ou supprimer.</div>
+                <div class="project-list" id="projectsList"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" onclick="exportProjects()"><i class="fas fa-file-export"></i> Export JSON</button>
+                <label class="btn btn-secondary" style="cursor:pointer">
+                    <i class="fas fa-file-import"></i> Import JSON
+                    <input id="importProjectsInput" type="file" accept="application/json" style="display:none" onchange="importProjectsFile(event)">
+                </label>
+                <button class="btn btn-danger" type="button" onclick="deleteAllProjects()"><i class="fas fa-trash"></i> Tout supprimer</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
