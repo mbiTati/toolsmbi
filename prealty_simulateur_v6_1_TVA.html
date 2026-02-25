@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PREALTY - Simulateur MDB v6</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--primary:#1E3A5F;--primary-light:#2D5A8B;--secondary:#10B981;--accent:#F59E0B;--danger:#EF4444;--purple:#8B5CF6;--bg:#F8FAFC;--text:#1E293B;--text-light:#64748B;--border:#E2E8F0;--shadow:0 1px 3px rgba(0,0,0,0.1);--radius:16px;--radius-sm:10px}
+        body.dark{--bg:#0B1220;--text:#E5E7EB;--text-light:#A7B2C2;--border:white;--shadow:0 1px 3px rgba(0,0,0,0.55);--input-bg:#0B1220;--card-bg:#0F172A;--muted-bg:#101C33}
+        body.dark input,body.dark select,body.dark textarea{background:var(--input-bg)!important;color:var(--text)!important;border-color:var(--border)!important}
+        body.dark input::placeholder,body.dark textarea::placeholder{color:#8FA0B8!important;opacity:1!important}
+        body.dark option{background:var(--input-bg);color:var(--text)}
+        body.dark .kpi-value,body.dark .metric-value,body.dark .stat-value{color:var(--text)!important}
+        body.dark .badge,body.dark .tag{color:var(--text)!important}
+        body.dark .hint,body.dark .help-text,body.dark .small-note{color:var(--text-light)!important;opacity:1!important}
+        body.dark .projects-modal .project-meta{color:var(--text-light)!important;opacity:1!important}
+        body.dark .card{background:var(--card-bg)}
+        body.dark .card-header{background:linear-gradient(135deg,#0B1220,#111827)}
+        body.dark .btn-secondary{background:#0F172A;color:var(--text);border:1px solid var(--border)}
+        body.dark .lot-header{background:#0F172A}
+        body.dark .scenario-card{background:#0F172A}
+        body.dark .result-card{background:#0F172A}
+        body.dark .detail-section{background:#0F172A}
+        body.dark .lots-table th{background:#0B1220}
+        body.dark .gng-bar-track{background:#111827}
+        body.dark .input-suffix span{color:var(--text-light)}
+        body.dark input,body.dark select{background:#0B1220;color:var(--text);border-color:var(--border)}
+        body.dark input:focus,body.dark select:focus{border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(45,90,139,0.25)}
+        body.dark ::placeholder{color:var(--text-light);opacity:0.9}
+        body.dark .gng-circle.go{background:#064E3B}
+        body.dark .gng-circle.vigilance{background:#3A2A0A}
+        body.dark .gng-circle.nogo{background:#3B0A0A}
+        body.dark .gng-card{background:#0F172A;border-color:var(--border)}
+        body.dark .lots-table td{color:var(--text)}
+        body.dark .lots-table tr:hover td{background:#0B1220}
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:16px;z-index:9999}
+        .modal-overlay.open{display:flex}
+        .modal{width:min(760px,100%);background:white;border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden}
+        .modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#EEF2FF,#FFFFFF)}
+        .modal-title{font-weight:800}
+        .modal-body{padding:14px 16px;max-height:min(70vh,640px);overflow:auto}
+        .modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+        .project-list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+        .project-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--bg)}
+        .project-name{font-weight:700}
+        .project-meta{font-size:12px;color:var(--text-light);margin-top:2px}
+        .project-actions{display:flex;gap:8px;flex-wrap:wrap}
+        .btn-danger{background:#DC2626;color:white}
+        .btn-danger:hover{filter:brightness(.95)}
+        body.dark .modal-header{background:linear-gradient(135deg,#0B1220,#111827)}
+        body.dark .project-item{background:#0B1220}
+        body.dark .modal{background:var(--card-bg)}
+        @media(max-width:900px){
+            .container{padding:14px}
+            .page-header h1{font-size:22px}
+            .header-actions{flex-wrap:wrap}
+            .form-row,.form-row.triple,.form-row.quad{grid-template-columns:1fr}
+            .lot-row,.lot-row.double{grid-template-columns:1fr}
+            .scenarios-grid{grid-template-columns:1fr}
+            .results-grid{grid-template-columns:repeat(2,1fr)}
+            .results-grid[style]{grid-template-columns:repeat(2,1fr)!important}
+            .gng-container{grid-template-columns:1fr}
+            .associe-grid{grid-template-columns:1fr}
+            .rep-bar{height:28px}
+            .penib-grid{grid-template-columns:repeat(2,1fr)}
+        }
+        @media(max-width:520px){.results-grid{grid-template-columns:1fr}.btn{padding:10px 14px}}
+        @media print{
+            .container{max-width:none;padding:0}
+            .page-header{margin:0 0 12px 0}
+            .page-header h1{font-size:18px}
+            .version-badge{display:none}
+            .header-actions{display:none!important}
+            .main-grid{grid-template-columns:1fr!important;gap:0}
+            .main-grid>div:first-child{display:none!important}
+            .card{margin-bottom:10px;border-radius:10px}
+            .card-header{padding:10px 12px}
+            .card-body{padding:12px}
+            .scenarios-grid{grid-template-columns:repeat(3,1fr)}
+            .results-grid{grid-template-columns:repeat(4,1fr)}
+            .lots-table th,.lots-table td{padding:6px 8px;font-size:10px}
+            .conseil{padding:8px 10px}
+            .gauge-container{padding:12px}
+        }
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+        .container{max-width:1800px;margin:0 auto;padding:24px}
+        .page-header{margin-bottom:32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+        .page-header h1{font-size:28px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:12px}
+        .page-header h1 i{color:var(--accent)}
+        .header-actions{display:flex;gap:12px;flex-wrap:wrap}
+        .version-badge{background:linear-gradient(135deg,var(--purple),var(--primary));color:white;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:var(--radius-sm);font-weight:500;font-size:14px;cursor:pointer;transition:all 0.2s;border:none;font-family:inherit}
+        .btn:hover{opacity:0.9;transform:translateY(-1px)}
+        .btn-primary{background:var(--primary);color:white}
+        .btn-secondary{background:white;color:var(--text);border:1px solid var(--border)}
+        .btn-success{background:var(--secondary);color:white}
+        .btn-sm{padding:8px 16px;font-size:13px}
+        .btn-icon{width:36px;height:36px;padding:0;justify-content:center;border-radius:8px}
+        .main-grid{display:grid;grid-template-columns:620px 1fr;gap:32px;align-items:start}
+        @media(max-width:1400px){.main-grid{grid-template-columns:1fr}}
+        .card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:24px}
+        .card-header{padding:20px 24px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#F8FAFC,#EEF2FF);display:flex;justify-content:space-between;align-items:center;border-radius:var(--radius) var(--radius) 0 0}
+        .card-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px}
+        .card-title i{color:var(--primary)}
+        .card-body{padding:24px}
+        .form-section{margin-bottom:24px}
+        .form-section:last-child{margin-bottom:0}
+        .form-section-title{font-size:13px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .form-section-title i{color:var(--primary)}
+        .form-row{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}
+        .form-row.triple{grid-template-columns:repeat(3,1fr)}
+        .form-row.quad{grid-template-columns:repeat(4,1fr)}
+        .form-group{display:flex;flex-direction:column}
+        .form-group label{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+        .form-group input,.form-group select{padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;width:100%;font-family:inherit}
+        .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(30,58,95,0.1)}
+        .input-suffix{position:relative}
+        .input-suffix input{padding-right:42px}
+        .input-suffix span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-light);font-size:13px;pointer-events:none}
+        .lot-card{background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);margin-bottom:12px;transition:all .2s}
+        .lot-card:hover{border-color:#CBD5E1}
+        .lot-card.vendu{border-color:var(--secondary);background:linear-gradient(135deg,#F0FDF4,#ECFDF5)}
+        .lot-card.terrain{border-color:var(--accent)}
+        .lot-card.renovation{border-color:var(--purple)}
+        .lot-header{padding:14px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:white;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0}
+        .lot-title{display:flex;align-items:center;gap:12px}
+        .lot-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+        .lot-card.terrain .lot-icon{background:#FEF3C7;color:#D97706}
+        .lot-card.renovation .lot-icon{background:#EDE9FE;color:#7C3AED}
+        .lot-card.vendu .lot-icon{background:#D1FAE5;color:#059669}
+        .lot-info h4{font-size:14px;font-weight:600}
+        .lot-info span{font-size:11px;color:var(--text-light)}
+        .lot-summary{display:flex;align-items:center;gap:12px}
+        .lot-stat{text-align:right;min-width:100px}
+        .lot-stat-value{font-size:15px;font-weight:700}
+        .lot-stat-value.positive{color:var(--secondary)}
+        .lot-stat-value.negative{color:var(--danger)}
+        .lot-stat-label{font-size:10px;color:var(--text-light)}
+        .lot-body{padding:18px;display:none}
+        .lot-card.open .lot-body{display:block}
+        .lot-toggle{transition:transform .3s;color:var(--text-light)}
+        .lot-card.open .lot-toggle{transform:rotate(180deg)}
+        .lot-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+        .lot-row.double{grid-template-columns:repeat(2,1fr)}
+        .lot-row.quad{grid-template-columns:repeat(4,1fr)}
+        .status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600}
+        .status-badge.vendu{background:#D1FAE5;color:#059669}
+        .status-badge.en-vente{background:#FEF3C7;color:#D97706}
+        .status-badge.travaux{background:#EDE9FE;color:#7C3AED}
+        .scenarios-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+        .scenario-card{background:var(--bg);border-radius:var(--radius);padding:20px;text-align:center;border:2px solid transparent}
+        .scenario-card.pessimiste{border-color:#FCA5A5;background:linear-gradient(135deg,#FEF2F2,#FEE2E2)}
+        .scenario-card.realiste{border-color:#FCD34D;background:linear-gradient(135deg,#FFFBEB,#FEF3C7)}
+        .scenario-card.optimiste{border-color:#6EE7B7;background:linear-gradient(135deg,#ECFDF5,#D1FAE5)}
+        .scenario-label{font-size:11px;font-weight:700;text-transform:uppercase;margin-bottom:4px}
+        .scenario-card.pessimiste .scenario-label{color:#DC2626}
+        .scenario-card.realiste .scenario-label{color:#D97706}
+        .scenario-card.optimiste .scenario-label{color:#059669}
+        .scenario-prix{font-size:12px;color:var(--text-light);margin-bottom:12px}
+        .scenario-marge{font-size:24px;font-weight:800;margin-bottom:4px}
+        .scenario-card.pessimiste .scenario-marge{color:#DC2626}
+        .scenario-card.realiste .scenario-marge{color:#D97706}
+        .scenario-card.optimiste .scenario-marge{color:#059669}
+        .scenario-roi{font-size:13px;font-weight:600;padding:4px 12px;border-radius:20px;display:inline-block}
+        .scenario-card.pessimiste .scenario-roi{background:#FEE2E2;color:#DC2626}
+        .scenario-card.realiste .scenario-roi{background:#FEF3C7;color:#D97706}
+        .scenario-card.optimiste .scenario-roi{background:#D1FAE5;color:#059669}
+        .scenario-sub{font-size:11px;color:var(--text-light);margin-top:6px}
+        .results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+        .result-card{background:var(--bg);border-radius:var(--radius-sm);padding:18px;text-align:center}
+        .result-label{font-size:11px;font-weight:500;color:var(--text-light);margin-bottom:8px;text-transform:uppercase}
+        .result-value{font-size:20px;font-weight:800;color:var(--primary)}
+        .detail-section{background:var(--bg);border-radius:var(--radius-sm);padding:16px 20px;margin-bottom:16px}
+        .detail-section-title{font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+        .detail-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid #E2E8F0}
+        .detail-row:last-child{border-bottom:none}
+        .detail-row .lbl{color:var(--text-light)}
+        .detail-row .val{font-weight:600}
+        .detail-row.total{border-top:2px solid var(--primary);padding-top:10px;margin-top:6px;font-weight:700;font-size:14px;border-bottom:none}
+        .detail-row.total .val{color:var(--primary)}
+        .lots-table{width:100%;border-collapse:collapse;font-size:12px}
+        .lots-table th,.lots-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+        .lots-table th{background:var(--bg);font-size:10px;font-weight:600;color:var(--text-light);text-transform:uppercase}
+        .lots-table td.number{text-align:right;font-family:'Inter',monospace;font-weight:500}
+        .lots-table tr.total-row{background:#EEF2FF;font-weight:600}
+        .lots-table tr.grand-total{background:var(--primary);color:white}
+        .lots-table .positive{color:var(--secondary)}
+        .lots-table .negative{color:var(--danger)}
+        .gauge-container{display:flex;flex-direction:column;align-items:center;padding:24px;background:linear-gradient(135deg,#EEF2FF,#F8FAFC);border-radius:var(--radius)}
+        .gauge-label{font-size:14px;font-weight:600;margin-bottom:16px}
+        .gauge{width:180px;height:90px;position:relative;overflow:hidden}
+        .gauge-bg{width:180px;height:90px;border-radius:90px 90px 0 0;background:linear-gradient(90deg,#EF4444 0%,#F59E0B 50%,#10B981 100%)}
+        .gauge-needle{position:absolute;bottom:0;left:50%;width:4px;height:70px;background:var(--primary);transform-origin:bottom center;transform:translateX(-50%) rotate(-90deg);transition:transform .8s;border-radius:2px}
+        .gauge-center{position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:20px;height:20px;background:var(--primary);border-radius:50%;border:3px solid white}
+        .gauge-value{font-size:28px;font-weight:800;color:var(--primary);margin-top:16px}
+        .gauge-scale{display:flex;justify-content:space-between;width:180px;margin-top:8px;font-size:10px;color:var(--text-light)}
+        .conseil{padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;font-size:13px}
+        .conseil i{font-size:16px;margin-top:2px}
+        .conseil-content{flex:1}
+        .conseil-title{font-weight:600;margin-bottom:2px}
+        .conseil-text{font-size:12px;opacity:.9}
+        .conseil-success{background:#D1FAE5;color:#065F46}
+        .conseil-warning{background:#FEF3C7;color:#92400E}
+        .conseil-danger{background:#FEE2E2;color:#991B1B}
+        .conseil-info{background:#DBEAFE;color:#1E40AF}
+        .repartition-bar{height:24px;border-radius:12px;overflow:hidden;display:flex;margin:12px 0}
+        .repartition-segment{height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;min-width:40px}
+        .repartition-legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:8px}
+        .legend-item{display:flex;align-items:center;gap:6px;font-size:12px}
+        .legend-dot{width:12px;height:12px;border-radius:4px}
+        .tabs{display:flex;gap:8px;margin-bottom:16px}
+        .tab{padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:white;transition:all .2s;font-family:inherit}
+        .tab.active{background:var(--primary);color:white;border-color:var(--primary)}
+        .associe-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+        .associe-card{background:white;border-radius:var(--radius-sm);padding:20px;text-align:center;border:2px solid var(--border)}
+        .associe-card .a-icon{font-size:28px;margin-bottom:8px}
+        .associe-card .a-label{font-size:12px;color:var(--text-light);margin-bottom:4px;font-weight:500}
+        .associe-card .a-pct{font-size:20px;font-weight:800;margin-bottom:6px}
+        .associe-card .a-gain{font-size:18px;font-weight:700}
+        .associe-card .a-desc{font-size:11px;color:var(--text-light);margin-top:6px}
+        .rep-bar{height:32px;border-radius:var(--radius-sm);overflow:hidden;display:flex;margin:16px 0}
+        .rep-bar .seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;transition:width .5s}
+        .pct-warning{background:#FEF3C7;color:#92400E;padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;margin-bottom:12px;text-align:center}
+        .gng-container{display:grid;grid-template-columns:200px 1fr;gap:24px;margin-bottom:24px}
+        .gng-circle{width:160px;height:160px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto;border:6px solid;transition:all .5s}
+        .gng-circle.go{border-color:#10B981;background:#ECFDF5}
+        .gng-circle.vigilance{border-color:#F59E0B;background:#FFFBEB}
+        .gng-circle.nogo{border-color:#EF4444;background:#FEF2F2}
+        .gng-circle .gng-score{font-size:36px;font-weight:800}
+        .gng-circle.go .gng-score{color:#059669}
+        .gng-circle.vigilance .gng-score{color:#D97706}
+        .gng-circle.nogo .gng-score{color:#DC2626}
+        .gng-circle .gng-label{font-size:14px;font-weight:700;margin-top:4px}
+        .gng-circle.go .gng-label{color:#059669}
+        .gng-circle.vigilance .gng-label{color:#D97706}
+        .gng-circle.nogo .gng-label{color:#DC2626}
+        .gng-detail{font-size:13px}
+        .gng-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+        .gng-bar-label{width:160px;text-align:right;color:var(--text-light);font-size:12px;font-weight:500}
+        .gng-bar-track{flex:1;height:10px;background:#E2E8F0;border-radius:5px;overflow:hidden}
+        .gng-bar-fill{height:100%;border-radius:5px;transition:width .5s}
+        .gng-bar-val{width:40px;font-weight:700;font-size:12px}
+        .penib-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:12px}
+        .penib-item{text-align:center}
+        .penib-item label{font-size:11px;color:var(--text-light);display:block;margin-bottom:6px;font-weight:500}
+        .penib-item select{width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;text-align:center;font-family:inherit;font-weight:600}
+        .empty-lots{text-align:center;padding:40px;color:var(--text-light)}
+        .empty-lots i{font-size:40px;margin-bottom:12px;opacity:.3}
+        /* TVA specific */
+        .tva-section{background:linear-gradient(135deg,#FFF7ED,#FEF3C7);border:2px solid #FCD34D;border-radius:var(--radius-sm);padding:14px;margin-top:8px}
+        body.dark .tva-section{background:linear-gradient(135deg,#1C1508,#261D0A);border-color:#92400E}
+        .tva-section-title{font-size:12px;font-weight:700;color:#92400E;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+        .tva-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700}
+        .tva-badge.credit{background:#D1FAE5;color:#059669}
+        .tva-badge.debit{background:#FEE2E2;color:#DC2626}
+        .tva-badge.exo{background:#E2E8F0;color:#64748B}
+        .tva-compare{background:#EEF2FF;border:1px dashed #818CF8;border-radius:8px;padding:10px 12px;margin-top:8px;font-size:12px}
+        body.dark .tva-compare{background:#111827;border-color:#4338CA}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="page-header">
+        <div style="display:flex;align-items:center;gap:16px;">
+            <h1><i class="fas fa-calculator"></i> Simulateur MDB</h1>
+            <span class="version-badge">v6.1 TVA</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="toggleDarkMode()" title="Mode clair / sombre"><i class="fas fa-moon"></i> Dark</button>
+            <button class="btn btn-secondary" onclick="openProjectsModal()"><i class="fas fa-folder-open"></i> Projets</button>
+            <button class="btn btn-secondary" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+            <button class="btn btn-secondary" onclick="resetForm()"><i class="fas fa-undo"></i> Reset</button>
+            <button class="btn btn-success" onclick="saveSimulation()"><i class="fas fa-save"></i> Sauvegarder</button>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- ============ GAUCHE ============ -->
+        <div>
+            <!-- ACQUISITION -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-home"></i> Acquisition</div></div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group"><label>Nom du projet</label><input type="text" id="nomProjet" value="Mon Projet MDB"></div>
+                        <div class="form-group"><label>Type d'opération</label>
+                            <select id="typeOperation"><option value="division_mixte">Division mixte</option><option value="division_terrain">Division parcellaire</option><option value="renovation">Rénovation</option><option value="achat_revente">Achat / Revente</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row triple">
+                        <div class="form-group"><label>Prix acquisition FAI</label><div class="input-suffix"><input type="number" id="prixAcquisition" value="350000" oninput="calc()"><span>€</span></div></div>
+                        <div class="form-group"><label>Frais notaire</label><div class="input-suffix"><input type="number" id="fraisNotairePct" value="8" step="0.1" oninput="calc()"><span>%</span></div></div>
+                        <div class="form-group"><label>Frais agence</label><div class="input-suffix"><input type="number" id="fraisAgence" value="0" oninput="calc()"><span>€</span></div></div>
+                    </div>
+                    <!-- TVA GLOBAL -->
+                    <div class="form-section" style="margin-top:8px;">
+                        <div class="form-section-title"><i class="fas fa-receipt"></i> Régime Fiscal & TVA</div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Statut fiscal</label>
+                                <select id="statutFiscal" onchange="onStatutFiscalChange();calc()">
+                                    <option value="mdb" selected>Marchand de biens</option>
+                                    <option value="nom_propre">Nom propre (particulier)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="grpAssujettiTVA"><label>Assujetti TVA ?</label>
+                                <select id="assujettiTVA" onchange="calc()">
+                                    <option value="oui" selected>Oui</option>
+                                    <option value="non">Non</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row" id="grpAcqAssujettiRow">
+                            <div class="form-group" id="grpAcqAssujetti"><label>Bien acquis auprès d'un assujetti à la TVA ?</label>
+                                <select id="acqAupresAssujetti" onchange="calc()">
+                                    <option value="non" selected>Non — pas de TVA déductible sur l'acquisition</option>
+                                    <option value="oui">Oui — TVA sur acquisition déductible</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FRAIS COMMUNS -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-coins"></i> Frais et Travaux Communs</div></div>
+                <div class="card-body">
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="fas fa-file-invoice"></i> Administratifs</div>
+                        <div class="form-row triple">
+                            <div class="form-group"><label>Géomètre</label><div class="input-suffix"><input type="number" id="fraisGeometre" value="3500" oninput="calc()"><span>€</span></div></div>
+                            <div class="form-group"><label>Urbanisme / DP</label><div class="input-suffix"><input type="number" id="fraisUrbanisme" value="1200" oninput="calc()"><span>€</span></div></div>
+                            <div class="form-group"><label>Autres frais admin</label><div class="input-suffix"><input type="number" id="autresFraisAdmin" value="0" oninput="calc()"><span>€</span></div></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="fas fa-hammer"></i> Travaux globaux</div>
+                        <div class="form-row"><div class="form-group"><label>Travaux intérieurs</label><div class="input-suffix"><input type="number" id="travauxInt" value="0" oninput="calc()"><span>€</span></div></div><div class="form-group"><label>Travaux extérieurs</label><div class="input-suffix"><input type="number" id="travauxExt" value="0" oninput="calc()"><span>€</span></div></div></div>
+                        <div class="form-row triple">
+                            <div class="form-group"><label>Architecte / BET</label><div class="input-suffix"><input type="number" id="archiGlobal" value="0" oninput="calc()"><span>€</span></div></div>
+                            <div class="form-group"><label>Assurances</label><div class="input-suffix"><input type="number" id="assurances" value="0" oninput="calc()"><span>€</span></div></div>
+                            <div class="form-group"><label>Aléas travaux</label><div class="input-suffix"><input type="number" id="aleasPct" value="5" oninput="calc()"><span>%</span></div></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="fas fa-bullhorn"></i> Commercialisation commune</div>
+                        <div class="form-row"><div class="form-group"><label>Commercialisation globale</label><div class="input-suffix"><input type="number" id="fraisCommercialisationGlobal" value="0" oninput="calc()"><span>€</span></div></div><div class="form-group"><label>Autres frais communs</label><div class="input-suffix"><input type="number" id="autresFraisCommuns" value="0" oninput="calc()"><span>€</span></div></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FINANCEMENT -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-percentage"></i> Financement / Portage</div></div>
+                <div class="card-body">
+                    <div class="form-row triple">
+                        <div class="form-group"><label>Apport</label><div class="input-suffix"><input type="number" id="apportPct" value="20" oninput="calc()"><span>%</span></div></div>
+                        <div class="form-group"><label>Taux crédit</label><div class="input-suffix"><input type="number" id="tauxCredit" value="4.5" step="0.1" oninput="calc()"><span>%</span></div></div>
+                        <div class="form-group"><label>Durée portage</label><div class="input-suffix"><input type="number" id="dureePortage" value="12" oninput="calc()"><span>mois</span></div></div>
+                    </div>
+                    <div class="form-row triple">
+                        <div class="form-group"><label>Assurance emprunt</label><div class="input-suffix"><input type="number" id="assuranceEmprunt" value="0" oninput="calc()"><span>€</span></div></div>
+                        <div class="form-group"><label>Frais de garantie</label><div class="input-suffix"><input type="number" id="fraisGarantie" value="0" oninput="calc()"><span>€</span></div></div>
+                        <div class="form-group"><label>Frais de dossier</label><div class="input-suffix"><input type="number" id="fraisDossier" value="0" oninput="calc()"><span>€</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOTS -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-layer-group"></i> Lots du Projet</div><button class="btn btn-primary btn-sm" onclick="addLot()"><i class="fas fa-plus"></i> Ajouter</button></div>
+                <div class="card-body">
+                    <div class="tabs"><div class="tab active" onclick="setRepMode('manuel')">Répartition manuelle</div><div class="tab" onclick="setRepMode('valeur')">Au prorata valeur</div></div>
+                    <div id="lots-container"></div>
+                    <div id="empty-lots" class="empty-lots" style="display:none;"><i class="fas fa-cubes"></i><h3>Aucun lot</h3></div>
+                </div>
+            </div>
+
+            <!-- PENIBILITE -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-clipboard-check"></i> Pénibilité & Durabilité</div></div>
+                <div class="card-body">
+                    <p style="font-size:12px;color:var(--text-light);margin-bottom:16px;"><i class="fas fa-info-circle"></i> Notez de 1 (facile) à 5 (difficile). Alimente le GO / NO GO.</p>
+                    <div class="penib-grid">
+                        <div class="penib-item"><label>Complexité admin</label><select id="penib1" onchange="calc()"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                        <div class="penib-item"><label>Risque urba</label><select id="penib2" onchange="calc()"><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                        <div class="penib-item"><label>Complexité travaux</label><select id="penib3" onchange="calc()"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                        <div class="penib-item"><label>Nb intervenants</label><select id="penib4" onchange="calc()"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                        <div class="penib-item"><label>Risque commercial</label><select id="penib5" onchange="calc()"><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPARTITION ASSOCIES -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-handshake"></i> Répartition Associés</div></div>
+                <div class="card-body">
+                    <div class="form-row triple">
+                        <div class="form-group"><label>🏗️ Porteur de projet</label><div class="input-suffix"><input type="number" id="pctPorteur" value="40" step="1" oninput="calc()"><span>%</span></div><small style="color:var(--text-light);font-size:11px;margin-top:4px;">Gère l'opération</small></div>
+                        <div class="form-group"><label>💰 Investisseur</label><div class="input-suffix"><input type="number" id="pctInvestisseur" value="50" step="1" oninput="calc()"><span>%</span></div><small style="color:var(--text-light);font-size:11px;margin-top:4px;">Met l'argent</small></div>
+                        <div class="form-group"><label>🤝 Apporteur d'affaires</label><div class="input-suffix"><input type="number" id="pctApporteur" value="10" step="1" oninput="calc()"><span>%</span></div><small style="color:var(--text-light);font-size:11px;margin-top:4px;">Fait le lien</small></div>
+                    </div>
+                    <div id="pct-warning" class="pct-warning" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ DROITE ============ -->
+        <div>
+            <!-- GO NO GO -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-traffic-light"></i> GO / NO GO</div></div>
+                <div class="card-body">
+                    <div class="gng-container">
+                        <div><div class="gng-circle" id="gng-circle"><div class="gng-score" id="gng-score">0</div><div class="gng-label" id="gng-label">—</div></div></div>
+                        <div class="gng-detail" id="gng-detail"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SYNTHESE -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-chart-pie"></i> Synthèse du Projet</div></div>
+                <div class="card-body">
+                    <div class="scenarios-grid">
+                        <div class="scenario-card pessimiste"><div class="scenario-label"><i class="fas fa-arrow-down"></i> Pessimiste</div><div class="scenario-prix" id="prix-pess">—</div><div class="scenario-marge" id="marge-pess">0 €</div><div class="scenario-roi" id="roi-pess">ROI: 0%</div><div class="scenario-sub" id="tva-pess"></div></div>
+                        <div class="scenario-card realiste"><div class="scenario-label"><i class="fas fa-bullseye"></i> Réaliste</div><div class="scenario-prix" id="prix-real">—</div><div class="scenario-marge" id="marge-real">0 €</div><div class="scenario-roi" id="roi-real">ROI: 0%</div><div class="scenario-sub" id="tva-real"></div></div>
+                        <div class="scenario-card optimiste"><div class="scenario-label"><i class="fas fa-arrow-up"></i> Optimiste</div><div class="scenario-prix" id="prix-opti">—</div><div class="scenario-marge" id="marge-opti">0 €</div><div class="scenario-roi" id="roi-opti">ROI: 0%</div><div class="scenario-sub" id="tva-opti"></div></div>
+                    </div>
+                    <div class="results-grid" style="grid-template-columns:repeat(5,1fr);">
+                        <div class="result-card"><div class="result-label">Coût acquisition</div><div class="result-value" id="r-acq">0 €</div></div>
+                        <div class="result-card"><div class="result-label">Frais + travaux</div><div class="result-value" id="r-trav">0 €</div></div>
+                        <div class="result-card"><div class="result-label">Coût portage</div><div class="result-value" id="r-port">0 €</div></div>
+                        <div class="result-card"><div class="result-label">Commercialisation</div><div class="result-value" id="r-comm" style="color:var(--accent);">0 €</div></div>
+                        <div class="result-card"><div class="result-label">Invest. total</div><div class="result-value" id="r-total" style="color:var(--purple);">0 €</div></div>
+                    </div>
+                    <div id="detail-acq" class="detail-section"></div>
+                    <div id="detail-trav" class="detail-section"></div>
+                    <div id="detail-port" class="detail-section"></div>
+                    <div id="detail-tva" class="detail-section"></div>
+                    <div style="display:grid;grid-template-columns:220px 1fr;gap:24px;margin-bottom:24px;">
+                        <div class="gauge-container"><div class="gauge-label">ROI Net Réaliste</div><div class="gauge"><div class="gauge-bg"></div><div class="gauge-needle" id="gauge-needle"></div><div class="gauge-center"></div></div><div class="gauge-value" id="gauge-value">0%</div><div class="gauge-scale"><span>0%</span><span>15%</span><span>30%+</span></div></div>
+                        <div id="conseils-container"></div>
+                    </div>
+                    <div style="margin-bottom:24px;"><div style="font-size:13px;font-weight:600;margin-bottom:8px;">Répartition du CA</div><div class="repartition-bar" id="rep-bar"></div><div class="repartition-legend" id="rep-leg"></div></div>
+                    <div><div style="font-size:13px;font-weight:600;margin-bottom:12px;">Détail par lot</div><div style="overflow-x:auto;"><table class="lots-table"><thead><tr><th>Lot</th><th style="text-align:right;">Coût lot</th><th style="text-align:right;">Vente</th><th style="text-align:right;">Marge brute</th><th style="text-align:right;">TVA due</th><th style="text-align:right;">Résultat net</th><th style="text-align:right;">ROI net</th></tr></thead><tbody id="lots-tbody"></tbody></table></div></div>
+                </div>
+            </div>
+
+            <!-- REPARTITION ASSOCIES RESULT -->
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-handshake"></i> Répartition de la Marge</div></div>
+                <div class="card-body">
+                    <div style="font-size:13px;color:var(--text-light);margin-bottom:12px;">Résultat net réaliste (après TVA) : <strong id="rep-marge-lbl" style="color:var(--primary);">0 €</strong></div>
+                    <div class="rep-bar" id="rep-assoc-bar"></div>
+                    <div class="associe-grid" id="assoc-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let lots=[], lotId=0, repMode='manuel';
+let openLotIds=new Set();
+function syncOpenLotIdsFromDOM(){try{openLotIds=new Set(Array.from(document.querySelectorAll('.lot-card.open')).map(c=>parseInt(c.getAttribute('data-lot-id'),10)).filter(n=>!isNaN(n)))}catch(e){}}
+
+const LT={maison_renovation:{l:'Maison (réno)',i:'fa-house'},maison_existante:{l:'Maison (existante)',i:'fa-home'},terrain_nu:{l:'Terrain nu',i:'fa-mountain-sun'},terrain_projet:{l:'Terrain + projet',i:'fa-drafting-compass'},appartement:{l:'Appartement',i:'fa-building'}};
+const LS={a_vendre:{l:'À vendre',c:'en-vente'},en_travaux:{l:'En travaux',c:'travaux'},vendu:{l:'Vendu',c:'vendu'}};
+const TVA_REGIMES={exoneration:{l:'Exonération TVA',desc:'Ancien >5 ans, pas d\'option'},tva_marge:{l:'TVA sur marge',desc:'Ancien >5 ans, option TVA'},tva_prix_total:{l:'TVA sur prix total',desc:'Neuf <5 ans / réno lourde'}};
+
+function f(n){return Math.round(n).toLocaleString('fr-FR')}
+function g(id,d=0){const e=document.getElementById(id);return e?(parseFloat(e.value)||d):d}
+function gv(id){const e=document.getElementById(id);return e?e.value:''}
+function baseAcq(){const p=g('prixAcquisition');const sumQP=lots.reduce((s,l)=>s+(l.quotePartAcquisition||0),0);return(p&&p>0)?p:sumQP}
+function totalNotaire(){return baseAcq()*(g('fraisNotairePct')/100)}
+function isMDB(){return gv('statutFiscal')==='mdb'}
+function isAssujettiTVA(){return isMDB()&&gv('assujettiTVA')==='oui'}
+function isAcqAssujetti(){return isAssujettiTVA()&&gv('acqAupresAssujetti')==='oui'}
+
+function onStatutFiscalChange(){
+    const mdb=isMDB();
+    document.getElementById('grpAssujettiTVA').style.display=mdb?'':'none';
+    document.getElementById('grpAcqAssujettiRow').style.display=mdb?'':'none';
+    renderLots();
+}
+
+// ===== LOT SCENARIOS =====
+function lotPrixScenario(lot,scenario){
+    if(lot.statut==='vendu'&&lot.prixVenteReel)return lot.prixVenteReel;
+    const mode=lot.scenarioMode||'pct';
+    if(mode==='pct'){const v=scenario==='pess'?(lot.pctPess??-10):scenario==='opti'?(lot.pctOpti??10):(lot.pctReal??0);return(lot.prixVenteEstime||0)*(1+v/100)}
+    if(mode==='prixm2'){const m2=scenario==='pess'?(lot.m2Pess??0):scenario==='opti'?(lot.m2Opti??0):(lot.m2Real??0);return m2*(lot.surface||0)}
+    const asNum=x=>{const n=(typeof x==='string')?parseFloat(x):x;return isFinite(n)?n:0};
+    if(scenario==='pess'){const v=asNum(lot.fixePess);return v>0?v:0}
+    if(scenario==='opti'){const v=asNum(lot.fixeOpti);return v>0?v:0}
+    const r=asNum(lot.fixeReal);return r>0?r:(lot.prixVenteEstime||0);
+}
+
+// ===== LOT TRAVAUX TOTAL =====
+function lotTravauxTotal(lot){return(lot.travauxTVA20||0)+(lot.travauxTVA10||0)+(lot.travauxTVA55||0)+(lot.travauxSansTVA||0)}
+
+// ===== TVA CALCULATIONS =====
+function calcLotTVA(lot,sc){
+    const px=lotPrixScenario(lot,sc);
+    const regime=lot.regimeTVA||'exoneration';
+
+    // Si nom propre ou non assujetti → pas de TVA
+    if(!isAssujettiTVA()) return {tvaCollectee:0,tvaDeductible:0,tvaDue:0,regime:'exoneration'};
+
+    // TVA collectée
+    let tvaCollectee=0;
+    if(regime==='tva_prix_total'){
+        tvaCollectee=px*20/120;
+    }else if(regime==='tva_marge'){
+        const m=px-(lot.quotePartAcquisition||0);
+        tvaCollectee=m>0?m*20/120:0;
+    }
+    // exoneration: 0
+
+    // TVA déductible (seulement si pas exonéré)
+    let tvaDeductible=0;
+    if(regime!=='exoneration'){
+        // Sur acquisition quote-part (si acquis auprès assujetti)
+        if(isAcqAssujetti()){tvaDeductible+=(lot.quotePartAcquisition||0)*20/120}
+        // Sur travaux par taux
+        tvaDeductible+=(lot.travauxTVA20||0)*20/120;
+        tvaDeductible+=(lot.travauxTVA10||0)*10/110;
+        tvaDeductible+=(lot.travauxTVA55||0)*5.5/105.5;
+        // Sur frais vente (honoraires agence soumis TVA 20%)
+        const fv=px*(lot.fraisVentePct/100);
+        tvaDeductible+=fv*20/120;
+        // Sur architecte lot (TVA 20%)
+        tvaDeductible+=(lot.architecte||0)*20/120;
+    }
+
+    const tvaDue=tvaCollectee-tvaDeductible;
+    return {tvaCollectee,tvaDeductible,tvaDue,regime};
+}
+
+// Comparaison : pour un lot en tva_marge ou exoneration, calculer l'alternative
+function calcTVACompare(lot,sc){
+    const current=lot.regimeTVA||'exoneration';
+    if(current==='tva_prix_total') return null; // obligatoire, pas de choix
+    const alt=current==='tva_marge'?'exoneration':'tva_marge';
+    const lotAlt={...lot,regimeTVA:alt};
+    const tvaCurrent=calcLotTVA(lot,sc);
+    const tvaAlt=calcLotTVA(lotAlt,sc);
+    const px=lotPrixScenario(lot,sc);
+    const coutLot=(lot.quotePartAcquisition||0)+lotTravauxTotal(lot)+(lot.viabilisation||0)+(lot.architecte||0);
+    const fv=px*(lot.fraisVentePct/100)+(lot.fraisCommercialisationLot||0);
+    const margeBrute=px-coutLot-fv;
+    const netCurrent=margeBrute-tvaCurrent.tvaDue;
+    const netAlt=margeBrute-tvaAlt.tvaDue;
+    const better=netAlt>netCurrent?alt:current;
+    return {current,alt,netCurrent,netAlt,better,altLabel:TVA_REGIMES[alt].l};
+}
+
+function addLot(preset){
+    const id=++lotId;
+    lots.push(preset||{id,nom:'Lot '+String.fromCharCode(64+lots.length+1),type:'maison_renovation',statut:'a_vendre',
+        quotePartAcquisition:0,travauxTVA20:0,travauxTVA10:0,travauxTVA55:0,travauxSansTVA:0,
+        viabilisation:0,architecte:0,fraisVentePct:5,fraisCommercialisationLot:0,
+        prixVenteEstime:0,prixVenteReel:null,surface:0,
+        regimeTVA:'exoneration',
+        scenarioMode:'pct',pctPess:-10,pctReal:0,pctOpti:10,
+        m2Pess:0,m2Real:0,m2Opti:0,fixePess:0,fixeReal:0,fixeOpti:0});
+    renderLots();calc();
+}
+function removeLot(id){lots=lots.filter(l=>l.id!==id);renderLots();calc()}
+
+function updateLotHeaderDOM(id){
+    const lot=lots.find(l=>l.id===id),card=document.querySelector('[data-lot-id="'+id+'"]');
+    if(!lot||!card)return;
+    card.classList.remove('vendu','terrain','renovation');
+    card.classList.add(lot.statut==='vendu'?'vendu':String(lot.type||'').includes('terrain')?'terrain':'renovation');
+    const tp=LT[lot.type],st=LS[lot.statut];
+    const nameEl=card.querySelector('.lot-info h4'),typeEl=card.querySelector('.lot-info span'),iconEl=card.querySelector('.lot-icon i');
+    if(nameEl)nameEl.textContent=lot.nom;
+    if(typeEl)typeEl.textContent=tp?tp.l:'';
+    if(iconEl&&tp)iconEl.className='fas '+tp.i;
+    const badge=card.querySelector('.status-badge');
+    if(badge&&st){badge.className='status-badge '+st.c;badge.textContent=st.l}
+    // Marge nette (après TVA) dans l'en-tête
+    const r=calcLotFull(lot,'real');
+    const margeEl=card.querySelector('.lot-stat-value');
+    if(margeEl){margeEl.textContent=(r.resultatNet>=0?'+':'')+f(r.resultatNet)+' €';margeEl.classList.toggle('positive',r.resultatNet>=0);margeEl.classList.toggle('negative',r.resultatNet<0)}
+}
+function updateLot(id,k,v){
+    const lot=lots.find(l=>l.id===id);if(!lot)return;
+    const nums=['prixVenteEstime','quotePartAcquisition','travauxTVA20','travauxTVA10','travauxTVA55','travauxSansTVA','viabilisation','architecte','surface','fraisVentePct','fraisCommercialisationLot','pctPess','pctReal','pctOpti','m2Pess','m2Real','m2Opti','fixePess','fixeReal','fixeOpti'];
+    if(k==='prixVenteReel'){const s=String(v??'').trim();lot.prixVenteReel=s===''?null:(parseFloat(s)||0)}
+    else if(nums.includes(k)){lot[k]=(parseFloat(v)||0)}
+    else{lot[k]=v}
+    calc();updateLotHeaderDOM(id);
+    if(k==='scenarioMode'||k==='regimeTVA'){syncOpenLotIdsFromDOM();renderLots();calc()}
+}
+function toggleLot(id){const c=document.querySelector('[data-lot-id="'+id+'"]');if(!c)return;c.classList.toggle('open');if(c.classList.contains('open'))openLotIds.add(id);else openLotIds.delete(id)}
+
+// ===== CALCULS =====
+function coutAcq(){const p=baseAcq();return p+p*(g('fraisNotairePct')/100)+g('fraisAgence')}
+function fraisCommuns(){
+    const admin=g('fraisGeometre')+g('fraisUrbanisme')+g('autresFraisAdmin');
+    const tBase=g('travauxInt')+g('travauxExt')+g('archiGlobal')+g('assurances');
+    const aleas=tBase*(g('aleasPct')/100);
+    const comm=g('fraisCommercialisationGlobal')+g('autresFraisCommuns');
+    return{admin,tBase,aleas,comm,total:admin+tBase+aleas+comm};
+}
+function coutPortage(invest){
+    const emp=invest*(1-g('apportPct')/100);
+    const int=emp*(g('tauxCredit')/100)*(g('dureePortage')/12);
+    const ass=g('assuranceEmprunt'),gar=g('fraisGarantie'),dos=g('fraisDossier');
+    return{emp,int,ass,gar,dos,total:int+ass+gar+dos};
+}
+
+// Calcul complet d'un lot (coût + TVA)
+function calcLotFull(lot,sc){
+    const px=lotPrixScenario(lot,sc);
+    const fv=px*(lot.fraisVentePct/100);
+    const cl=lot.fraisCommercialisationLot||0;
+    const trx=lotTravauxTotal(lot);
+    const cout=(lot.quotePartAcquisition||0)+trx+(lot.viabilisation||0)+(lot.architecte||0);
+    const coutTot=cout+fv+cl;
+    const margeBrute=px-coutTot;
+    const tva=calcLotTVA(lot,sc);
+    const resultatNet=margeBrute-tva.tvaDue;
+    return{px,fv,cl,trx,cout,coutTot,margeBrute,tva,resultatNet};
+}
+
+function scenario(sc){
+    const ca=coutAcq(),fc=fraisCommuns();
+    let tVentes=0,tFV=0,tCL=0,tTVADue=0,tTVAColl=0,tTVADed=0;
+    lots.forEach(l=>{
+        const r=calcLotFull(l,sc);
+        tVentes+=r.px;tFV+=r.fv;tCL+=r.cl;
+        tTVADue+=r.tva.tvaDue;tTVAColl+=r.tva.tvaCollectee;tTVADed+=r.tva.tvaDeductible;
+    });
+    const tLots=lots.reduce((s,l)=>s+lotTravauxTotal(l)+(l.viabilisation||0)+(l.architecte||0),0);
+    const investAvant=ca+fc.total+tLots;
+    const port=coutPortage(investAvant);
+    const invest=investAvant+port.total;
+    const coutComplet=invest+tFV+tCL;
+    const margeBrute=tVentes-coutComplet;
+    const resultatNet=margeBrute-tTVADue;
+    const roi=coutComplet>0?(resultatNet/coutComplet)*100:0;
+    const roiBrut=coutComplet>0?(margeBrute/coutComplet)*100:0;
+    return{tVentes,tFV,tCL,invest,coutComplet,port,margeBrute,resultatNet,roi,roiBrut,ca,fc,tLots,tTVADue,tTVAColl,tTVADed};
+}
+
+// ===== GO NO GO =====
+function calcGoNoGo(sReal,sPess){
+    const roiR=sReal.roi,roiP=sPess.roi;
+    const duree=g('dureePortage');
+    const penib=(g('penib1')+g('penib2')+g('penib3')+g('penib4')+g('penib5'))/5;
+    const ratioFin=sReal.resultatNet>0?(sReal.port.total/sReal.resultatNet)*100:100;
+    const ecart=roiR>0?Math.abs(roiR-roiP)/roiR*100:100;
+    const sROI=roiR>=25?100:roiR>=18?50+((roiR-18)/7)*50:roiR>=10?(roiR/18)*50:0;
+    const sROIP=roiP>=10?100:roiP>=5?50+((roiP-5)/5)*50:roiP>=0?(roiP/5)*50:0;
+    const sEcart=ecart<=30?100:ecart<=50?50+((50-ecart)/20)*50:ecart<=80?(80-ecart)/30*50:0;
+    const sPenib=Math.max(0,(5-penib)/4*100);
+    const sDuree=duree<=12?100:duree<=18?50+((18-duree)/6)*50:duree<=24?(24-duree)/6*50:0;
+    const sFin=ratioFin<=15?100:ratioFin<=30?50+((30-ratioFin)/15)*50:ratioFin<=50?(50-ratioFin)/20*50:0;
+    const total=sROI*.30+sROIP*.20+sEcart*.15+sPenib*.15+sDuree*.10+sFin*.10;
+    const verdict=total>=70?'go':total>=50?'vigilance':'nogo';
+    const label=total>=70?'GO':total>=50?'VIGILANCE':'NO GO';
+    return{total:Math.round(total),verdict,label,details:[
+        {l:'ROI net réaliste ('+roiR.toFixed(1)+'%)',v:Math.round(sROI),w:30,c:sROI>=70?'#10B981':sROI>=50?'#F59E0B':'#EF4444'},
+        {l:'ROI net pessimiste ('+roiP.toFixed(1)+'%)',v:Math.round(sROIP),w:20,c:sROIP>=70?'#10B981':sROIP>=50?'#F59E0B':'#EF4444'},
+        {l:'Marge de sécurité',v:Math.round(sEcart),w:15,c:sEcart>=70?'#10B981':sEcart>=50?'#F59E0B':'#EF4444'},
+        {l:'Pénibilité ('+penib.toFixed(1)+'/5)',v:Math.round(sPenib),w:15,c:sPenib>=70?'#10B981':sPenib>=50?'#F59E0B':'#EF4444'},
+        {l:'Durée ('+duree+' mois)',v:Math.round(sDuree),w:10,c:sDuree>=70?'#10B981':sDuree>=50?'#F59E0B':'#EF4444'},
+        {l:'Ratio frais fin./résultat',v:Math.round(sFin),w:10,c:sFin>=70?'#10B981':sFin>=50?'#F59E0B':'#EF4444'},
+    ]};
+}
+
+// ===== RENDER LOTS =====
+function setRepMode(m){repMode=m;document.querySelectorAll('.tabs .tab').forEach((t,i)=>{t.classList.toggle('active',(i===0&&m==='manuel')||(i===1&&m==='valeur'))});if(m==='valeur')reCalcQP();renderLots();calc()}
+function reCalcQP(){const ca=coutAcq();const tv=lots.reduce((s,l)=>s+(l.prixVenteEstime||0),0);if(tv>0)lots.forEach(l=>{l.quotePartAcquisition=Math.round((l.prixVenteEstime/tv)*ca)})}
+
+function renderLots(){
+    syncOpenLotIdsFromDOM();
+    const ct=document.getElementById('lots-container'),em=document.getElementById('empty-lots');
+    if(!lots.length){ct.innerHTML='';em.style.display='block';return}
+    em.style.display='none';
+    const showTVA=isAssujettiTVA();
+    let h='';
+    lots.forEach(lot=>{
+        const tp=LT[lot.type],st=LS[lot.statut];
+        const r=calcLotFull(lot,'real');
+        const cc=lot.statut==='vendu'?'vendu':lot.type.includes('terrain')?'terrain':'renovation';
+        const sm=lot.scenarioMode||'pct';
+        const regime=lot.regimeTVA||'exoneration';
+        // TVA comparison
+        const cmp=showTVA?calcTVACompare(lot,'real'):null;
+        h+=`<div class="lot-card ${cc} ${openLotIds.has(lot.id)?'open':''}" data-lot-id="${lot.id}">
+            <div class="lot-header" onclick="toggleLot(${lot.id})">
+                <div class="lot-title"><div class="lot-icon"><i class="fas ${tp.i}"></i></div><div class="lot-info"><h4>${lot.nom}</h4><span>${tp.l}</span></div></div>
+                <div class="lot-summary">
+                    <span class="status-badge ${st.c}">${st.l}</span>
+                    ${showTVA?`<span class="tva-badge ${r.tva.tvaDue<=0?'credit':r.tva.tvaDue>0?'debit':'exo'}">${regime==='exoneration'?'Exo TVA':regime==='tva_marge'?'TVA marge':'TVA total'}</span>`:''}
+                    <div class="lot-stat"><div class="lot-stat-value ${r.resultatNet>=0?'positive':'negative'}">${r.resultatNet>=0?'+':''}${f(r.resultatNet)} €</div><div class="lot-stat-label">${showTVA?'Résultat net':'Marge'}</div></div>
+                    <button class="btn btn-icon btn-secondary" onclick="event.stopPropagation();removeLot(${lot.id})" title="Supprimer"><i class="fas fa-trash"></i></button>
+                    <i class="fas fa-chevron-down lot-toggle"></i>
+                </div>
+            </div>
+            <div class="lot-body">
+                <div class="lot-row double">
+                    <div class="form-group"><label>Nom du lot</label><input type="text" value="${lot.nom}" oninput="updateLot(${lot.id},'nom',this.value)"></div>
+                    <div class="form-group"><label>Type</label><select onchange="updateLot(${lot.id},'type',this.value)">${Object.entries(LT).map(([k,v])=>`<option value="${k}" ${lot.type===k?'selected':''}>${v.l}</option>`).join('')}</select></div>
+                </div>
+                <div class="lot-row">
+                    <div class="form-group"><label>Quote-part acquisition</label><div class="input-suffix"><input type="number" value="${lot.quotePartAcquisition}" oninput="updateLot(${lot.id},'quotePartAcquisition',this.value)" ${repMode!=='manuel'?'readonly style="background:#f1f5f9;"':''}><span>€</span></div></div>
+                    <div class="form-group"><label>Surface</label><div class="input-suffix"><input type="number" value="${lot.surface||''}" oninput="updateLot(${lot.id},'surface',this.value)"><span>m²</span></div></div>
+                    <div class="form-group"><label>Statut</label><select onchange="updateLot(${lot.id},'statut',this.value)">${Object.entries(LS).map(([k,v])=>`<option value="${k}" ${lot.statut===k?'selected':''}>${v.l}</option>`).join('')}</select></div>
+                </div>
+
+                <!-- TRAVAUX PAR TAUX TVA -->
+                <div style="font-size:12px;font-weight:600;color:var(--text-light);margin:8px 0 6px;">TRAVAUX DU LOT <span style="font-weight:400;">(montants TTC)</span></div>
+                <div class="lot-row quad">
+                    <div class="form-group"><label>Travaux TVA 20%</label><div class="input-suffix"><input type="number" value="${lot.travauxTVA20||''}" oninput="updateLot(${lot.id},'travauxTVA20',this.value)" placeholder="0"><span>€</span></div><small style="color:var(--text-light);font-size:10px;">Neuf / standard</small></div>
+                    <div class="form-group"><label>Travaux TVA 10%</label><div class="input-suffix"><input type="number" value="${lot.travauxTVA10||''}" oninput="updateLot(${lot.id},'travauxTVA10',this.value)" placeholder="0"><span>€</span></div><small style="color:var(--text-light);font-size:10px;">Réno ancien >2 ans</small></div>
+                    <div class="form-group"><label>Travaux TVA 5,5%</label><div class="input-suffix"><input type="number" value="${lot.travauxTVA55||''}" oninput="updateLot(${lot.id},'travauxTVA55',this.value)" placeholder="0"><span>€</span></div><small style="color:var(--text-light);font-size:10px;">Énergie / réno perf.</small></div>
+                    <div class="form-group"><label>Travaux sans TVA</label><div class="input-suffix"><input type="number" value="${lot.travauxSansTVA||''}" oninput="updateLot(${lot.id},'travauxSansTVA',this.value)" placeholder="0"><span>€</span></div><small style="color:var(--text-light);font-size:10px;">Micro / assurance</small></div>
+                </div>
+                <div class="lot-row">
+                    <div class="form-group"><label>Viabilisation</label><div class="input-suffix"><input type="number" value="${lot.viabilisation||''}" oninput="updateLot(${lot.id},'viabilisation',this.value)"><span>€</span></div></div>
+                    <div class="form-group"><label>Architecte lot</label><div class="input-suffix"><input type="number" value="${lot.architecte||''}" oninput="updateLot(${lot.id},'architecte',this.value)"><span>€</span></div></div>
+                </div>
+                <div class="lot-row">
+                    <div class="form-group"><label>Prix vente estimé</label><div class="input-suffix"><input type="number" value="${lot.prixVenteEstime}" oninput="updateLot(${lot.id},'prixVenteEstime',this.value)"><span>€</span></div></div>
+                    <div class="form-group"><label>Prix vente réel</label><div class="input-suffix"><input type="number" value="${lot.prixVenteReel||''}" oninput="updateLot(${lot.id},'prixVenteReel',this.value)" placeholder="Non vendu"><span>€</span></div></div>
+                    <div class="form-group"><label>Frais vente (%)</label><div class="input-suffix"><input type="number" value="${lot.fraisVentePct}" step="0.5" oninput="updateLot(${lot.id},'fraisVentePct',this.value)"><span>%</span></div></div>
+                </div>
+                <div class="lot-row double">
+                    <div class="form-group"><label>🏷️ Frais commercialisation (lot)</label><div class="input-suffix"><input type="number" value="${lot.fraisCommercialisationLot||0}" oninput="updateLot(${lot.id},'fraisCommercialisationLot',this.value)"><span>€</span></div></div>
+                </div>
+
+                <!-- TVA REGIME PAR LOT -->
+                ${showTVA?`<div class="tva-section">
+                    <div class="tva-section-title"><i class="fas fa-receipt"></i> Régime TVA de revente</div>
+                    <div class="lot-row double" style="margin-bottom:6px;">
+                        <div class="form-group"><label>Régime TVA</label><select onchange="updateLot(${lot.id},'regimeTVA',this.value)">${Object.entries(TVA_REGIMES).map(([k,v])=>`<option value="${k}" ${regime===k?'selected':''}>${v.l}</option>`).join('')}</select><small style="color:var(--text-light);font-size:10px;">${TVA_REGIMES[regime].desc}</small></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px;text-align:center;">
+                        <div><div style="color:var(--text-light);">TVA collectée</div><div style="font-weight:700;color:#DC2626;">${f(r.tva.tvaCollectee)} €</div></div>
+                        <div><div style="color:var(--text-light);">TVA déductible</div><div style="font-weight:700;color:var(--secondary);">${f(r.tva.tvaDeductible)} €</div></div>
+                        <div><div style="color:var(--text-light);">${r.tva.tvaDue>=0?'TVA due':'Crédit TVA'}</div><div style="font-weight:700;color:${r.tva.tvaDue>=0?'#DC2626':'var(--secondary)'};">${r.tva.tvaDue>=0?'':'+'}${f(Math.abs(r.tva.tvaDue))} €</div></div>
+                    </div>
+                    ${cmp&&cmp.better!==cmp.current?`<div class="tva-compare"><i class="fas fa-lightbulb" style="color:#F59E0B;"></i> <strong>Conseil :</strong> En ${cmp.altLabel}, résultat net = <strong>${f(cmp.netAlt)} €</strong> vs ${f(cmp.netCurrent)} € actuellement → <strong>+${f(cmp.netAlt-cmp.netCurrent)} €</strong></div>`:''}
+                </div>`:''}
+
+                <!-- SCENARIOS LOT -->
+                <div style="background:#EEF2FF;border-radius:10px;padding:14px;margin-top:8px;">
+                    <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:10px;"><i class="fas fa-chart-line"></i> Scénarios de ce lot</div>
+                    <div class="form-row triple" style="margin-bottom:10px;">
+                        <div class="form-group"><label>Mode scénario</label><select onchange="updateLot(${lot.id},'scenarioMode',this.value)"><option value="pct" ${sm==='pct'?'selected':''}>Variation %</option><option value="prixm2" ${sm==='prixm2'?'selected':''}>Prix / m²</option><option value="fixe" ${sm==='fixe'?'selected':''}>Prix fixe</option></select></div>
+                    </div>
+                    ${sm==='pct'?`<div class="lot-row triple">
+                        <div class="form-group"><label style="color:#DC2626;font-size:12px;">📉 Pessimiste</label><div class="input-suffix"><input type="number" value="${lot.pctPess??-10}" oninput="updateLot(${lot.id},'pctPess',this.value)"><span>%</span></div></div>
+                        <div class="form-group"><label style="color:#D97706;font-size:12px;">🎯 Réaliste</label><div class="input-suffix"><input type="number" value="${lot.pctReal??0}" oninput="updateLot(${lot.id},'pctReal',this.value)"><span>%</span></div></div>
+                        <div class="form-group"><label style="color:#059669;font-size:12px;">📈 Optimiste</label><div class="input-suffix"><input type="number" value="${lot.pctOpti??10}" oninput="updateLot(${lot.id},'pctOpti',this.value)"><span>%</span></div></div>
+                    </div>`:''}
+                    ${sm==='prixm2'?`<div class="lot-row triple">
+                        <div class="form-group"><label style="color:#DC2626;font-size:12px;">📉 Pessimiste /m²</label><div class="input-suffix"><input type="number" value="${lot.m2Pess||''}" oninput="updateLot(${lot.id},'m2Pess',this.value)"><span>€</span></div></div>
+                        <div class="form-group"><label style="color:#D97706;font-size:12px;">🎯 Réaliste /m²</label><div class="input-suffix"><input type="number" value="${lot.m2Real||''}" oninput="updateLot(${lot.id},'m2Real',this.value)"><span>€</span></div></div>
+                        <div class="form-group"><label style="color:#059669;font-size:12px;">📈 Optimiste /m²</label><div class="input-suffix"><input type="number" value="${lot.m2Opti||''}" oninput="updateLot(${lot.id},'m2Opti',this.value)"><span>€</span></div></div>
+                    </div><div style="font-size:11px;color:var(--text-light);">= Pess: ${f(lotPrixScenario(lot,'pess'))}€ | Réal: ${f(lotPrixScenario(lot,'real'))}€ | Opti: ${f(lotPrixScenario(lot,'opti'))}€</div>`:''}
+                    ${sm==='fixe'?`<div class="lot-row triple">
+                        <div class="form-group"><label style="color:#DC2626;font-size:12px;">📉 Prix pessimiste</label><div class="input-suffix"><input type="number" value="${lot.fixePess||''}" oninput="updateLot(${lot.id},'fixePess',this.value)"><span>€</span></div></div>
+                        <div class="form-group"><label style="color:#D97706;font-size:12px;">🎯 Prix réaliste</label><div class="input-suffix"><input type="number" value="${lot.fixeReal||lot.prixVenteEstime||''}" oninput="updateLot(${lot.id},'fixeReal',this.value)"><span>€</span></div></div>
+                        <div class="form-group"><label style="color:#059669;font-size:12px;">📈 Prix optimiste</label><div class="input-suffix"><input type="number" value="${lot.fixeOpti||''}" oninput="updateLot(${lot.id},'fixeOpti',this.value)"><span>€</span></div></div>
+                    </div>`:''}
+                </div>
+            </div>
+        </div>`;
+    });
+    ct.innerHTML=h;
+}
+
+// ===== CONSEILS =====
+function conseils(s){
+    const c=[];
+    if(s.roi>=25)c.push({t:'success',i:'fa-trophy',ti:'Excellente opération !',tx:'ROI net de '+s.roi.toFixed(1)+'% après TVA.'});
+    else if(s.roi>=18)c.push({t:'success',i:'fa-check-circle',ti:'Bonne opération',tx:'ROI net de '+s.roi.toFixed(1)+'% — Au-dessus du seuil minimum (18%).'});
+    else if(s.roi>=10)c.push({t:'warning',i:'fa-exclamation-triangle',ti:'Sous le seuil minimum',tx:'ROI net de '+s.roi.toFixed(1)+'% — En dessous des 18% recommandés.'});
+    else if(s.roi>0)c.push({t:'danger',i:'fa-times-circle',ti:'Rentabilité insuffisante',tx:'ROI net de '+s.roi.toFixed(1)+'% — Loin du seuil de 18-25%.'});
+    else c.push({t:'danger',i:'fa-ban',ti:'Déficitaire !',tx:'Perte de '+f(Math.abs(s.resultatNet))+' €'});
+    if(s.tTVADue>0&&isAssujettiTVA())c.push({t:'info',i:'fa-receipt',ti:'TVA à payer : '+f(s.tTVADue)+' €',tx:'La TVA réduit la marge brute de '+f(s.margeBrute)+' € à un résultat net de '+f(s.resultatNet)+' €.'});
+    if(s.tTVADue<0&&isAssujettiTVA())c.push({t:'success',i:'fa-receipt',ti:'Crédit de TVA : '+f(Math.abs(s.tTVADue))+' €',tx:'Vous récupérez de la TVA ! Le résultat net ('+f(s.resultatNet)+' €) est supérieur à la marge brute.'});
+    const fr=s.invest>0?(s.fc.total/s.invest)*100:0;
+    if(fr>15)c.push({t:'warning',i:'fa-search-dollar',ti:'Frais communs élevés',tx:fr.toFixed(1)+'% de l\'investissement.'});
+    if(s.port.total>0&&s.resultatNet>0&&s.port.total/s.resultatNet>.3)c.push({t:'info',i:'fa-clock',ti:'Portage coûteux',tx:'Les frais financiers mangent '+((s.port.total/s.resultatNet)*100).toFixed(0)+'% du résultat.'});
+    return c;
+}
+
+// ===== MAIN CALC =====
+function calc(){
+    if(repMode==='valeur')reCalcQP();
+    const sP=scenario('pess'),sR=scenario('real'),sO=scenario('opti');
+    const showTVA=isAssujettiTVA();
+
+    // Scénarios
+    ['pess','real','opti'].forEach((sc,i)=>{
+        const s=[sP,sR,sO][i];
+        document.getElementById('prix-'+sc).textContent=f(s.tVentes)+' €';
+        document.getElementById('marge-'+sc).textContent=(s.resultatNet>=0?'+':'')+f(s.resultatNet)+' €';
+        document.getElementById('roi-'+sc).textContent='ROI: '+s.roi.toFixed(1)+'%';
+        const tvaEl=document.getElementById('tva-'+sc);
+        if(showTVA&&s.tTVADue!==0){tvaEl.innerHTML=`Marge brute: ${f(s.margeBrute)} € | TVA: ${s.tTVADue>=0?'-':'+'}${f(Math.abs(s.tTVADue))} €`}
+        else{tvaEl.textContent=''}
+    });
+
+    // KPIs
+    document.getElementById('r-acq').textContent=f(sR.ca)+' €';
+    document.getElementById('r-trav').textContent=f(sR.fc.total+sR.tLots)+' €';
+    document.getElementById('r-port').textContent=f(sR.port.total)+' €';
+    document.getElementById('r-comm').textContent=f(sR.tFV+sR.tCL+g('fraisCommercialisationGlobal'))+' €';
+    document.getElementById('r-total').textContent=f(sR.coutComplet)+' €';
+
+    // Détails
+    const pA=baseAcq(),not=totalNotaire();
+    document.getElementById('detail-acq').innerHTML=`<div class="detail-section-title"><i class="fas fa-home"></i> Détail Acquisition</div><div class="detail-row"><span class="lbl">Prix acquisition FAI</span><span class="val">${f(pA)} €</span></div><div class="detail-row"><span class="lbl">Frais notaire (${g('fraisNotairePct')}%)</span><span class="val">${f(not)} €</span></div><div class="detail-row"><span class="lbl">Frais agence</span><span class="val">${f(g('fraisAgence'))} €</span></div><div class="detail-row total"><span>TOTAL ACQUISITION</span><span class="val">${f(sR.ca)} €</span></div>`;
+
+    const fc=sR.fc;
+    document.getElementById('detail-trav').innerHTML=`<div class="detail-section-title"><i class="fas fa-hammer"></i> Détail Frais & Travaux</div><div class="detail-row"><span class="lbl">Géomètre</span><span class="val">${f(g('fraisGeometre'))} €</span></div><div class="detail-row"><span class="lbl">Urbanisme</span><span class="val">${f(g('fraisUrbanisme'))} €</span></div><div class="detail-row"><span class="lbl">Autres admin</span><span class="val">${f(g('autresFraisAdmin'))} €</span></div><div class="detail-row"><span class="lbl">Travaux int.</span><span class="val">${f(g('travauxInt'))} €</span></div><div class="detail-row"><span class="lbl">Travaux ext.</span><span class="val">${f(g('travauxExt'))} €</span></div><div class="detail-row"><span class="lbl">Architecte/BET</span><span class="val">${f(g('archiGlobal'))} €</span></div><div class="detail-row"><span class="lbl">Assurances</span><span class="val">${f(g('assurances'))} €</span></div><div class="detail-row"><span class="lbl">Aléas (${g('aleasPct')}%)</span><span class="val">${f(fc.aleas)} €</span></div><div class="detail-row"><span class="lbl">Commercialisation globale</span><span class="val">${f(g('fraisCommercialisationGlobal'))} €</span></div><div class="detail-row"><span class="lbl">Autres frais communs</span><span class="val">${f(g('autresFraisCommuns'))} €</span></div><div class="detail-row"><span class="lbl">Travaux par lots</span><span class="val">${f(sR.tLots)} €</span></div><div class="detail-row total"><span>TOTAL FRAIS + TRAVAUX</span><span class="val">${f(fc.total+sR.tLots)} €</span></div>`;
+
+    const p=sR.port;
+    document.getElementById('detail-port').innerHTML=`<div class="detail-section-title"><i class="fas fa-university"></i> Détail Portage</div><div class="detail-row"><span class="lbl">Montant emprunté (${100-g('apportPct')}%)</span><span class="val">${f(p.emp)} €</span></div><div class="detail-row"><span class="lbl">Intérêts (${g('tauxCredit')}% × ${g('dureePortage')} mois)</span><span class="val">${f(p.int)} €</span></div><div class="detail-row"><span class="lbl">Assurance emprunt</span><span class="val">${f(p.ass)} €</span></div><div class="detail-row"><span class="lbl">Frais garantie</span><span class="val">${f(p.gar)} €</span></div><div class="detail-row"><span class="lbl">Frais dossier</span><span class="val">${f(p.dos)} €</span></div><div class="detail-row total"><span>TOTAL PORTAGE</span><span class="val">${f(p.total)} €</span></div>`;
+
+    // Détail TVA
+    const dtva=document.getElementById('detail-tva');
+    if(showTVA&&(sR.tTVAColl>0||sR.tTVADed>0||sR.tTVADue!==0)){
+        // Per-lot detail
+        let lotTVARows='';
+        lots.forEach(lot=>{
+            const t=calcLotTVA(lot,'real');
+            const reg=lot.regimeTVA||'exoneration';
+            const regLabel=reg==='tva_marge'?'TVA marge':reg==='tva_prix_total'?'TVA prix total':'Exonération';
+            const cmp=calcTVACompare(lot,'real');
+            const optionLabel=cmp&&cmp.better!==cmp.current?`→ <span style="color:#D97706;font-weight:700;">Conseil: ${TVA_REGIMES[cmp.better].l}</span>`:`<span style="color:var(--text-light);">✓ optimal</span>`;
+            lotTVARows+=`<div class="detail-row"><span class="lbl">${lot.nom} <span style="font-size:10px;opacity:.7;">(${regLabel})</span></span><span class="val" style="color:${t.tvaDue>=0?'#DC2626':'var(--secondary)'};">${t.tvaDue>=0?'':'+'} ${f(Math.abs(t.tvaDue))} € ${cmp?optionLabel:''}</span></div>`;
+        });
+
+        const creditTVA=sR.tTVADue<0?Math.abs(sR.tTVADue):0;
+        const tvaDue=sR.tTVADue>=0?sR.tTVADue:0;
+
+        dtva.innerHTML=`<div class="detail-section-title"><i class="fas fa-receipt" style="color:#D97706;"></i> Bilan TVA — Scénario réaliste</div>
+        <div class="detail-row"><span class="lbl">TVA collectée (ventes)</span><span class="val" style="color:#DC2626;">${f(sR.tTVAColl)} €</span></div>
+        <div class="detail-row"><span class="lbl">TVA déductible (acquisitions + travaux + frais)</span><span class="val" style="color:var(--secondary);">- ${f(sR.tTVADed)} €</span></div>
+        <div class="detail-row total"><span>${tvaDue>0?'TVA NETTE À PAYER':'CRÉDIT DE TVA (remboursable)'}</span><span class="val" style="color:${tvaDue>0?'#DC2626':'var(--secondary)'};">${tvaDue>0?f(tvaDue)+' €':'+'+f(creditTVA)+' €'}</span></div>
+        ${creditTVA>0?`<div style="background:#D1FAE5;color:#065F46;border-radius:8px;padding:10px 14px;margin-top:10px;font-size:12px;"><i class="fas fa-info-circle"></i> <strong>Crédit de TVA de ${f(creditTVA)} €</strong> — Vous pouvez demander le remboursement auprès du SIE (Service des Impôts des Entreprises) ou l'imputer sur vos prochaines déclarations de TVA.</div>`:''}
+        <div style="margin-top:12px;font-size:12px;font-weight:600;color:var(--text-light);margin-bottom:6px;">DÉTAIL PAR LOT</div>
+        ${lotTVARows}
+        <div style="margin-top:10px;"></div>
+        <div class="detail-row"><span class="lbl">Marge brute (avant TVA)</span><span class="val">${f(sR.margeBrute)} €</span></div>
+        <div class="detail-row total" style="border-top-color:#D97706;"><span>RÉSULTAT NET APRÈS TVA</span><span class="val" style="color:${sR.resultatNet>=0?'var(--secondary)':'var(--danger)'};">${sR.resultatNet>=0?'+':''}${f(sR.resultatNet)} €</span></div>`;
+    }else{dtva.innerHTML=''}
+
+    // Gauge (ROI net)
+    const angle=Math.min(Math.max((sR.roi/30)*180-90,-90),90);
+    document.getElementById('gauge-needle').style.transform='translateX(-50%) rotate('+angle+'deg)';
+    document.getElementById('gauge-value').textContent=sR.roi.toFixed(1)+'%';
+
+    // Conseils
+    const cs=conseils(sR);
+    document.getElementById('conseils-container').innerHTML=cs.map(c=>`<div class="conseil conseil-${c.t}"><i class="fas ${c.i}"></i><div class="conseil-content"><div class="conseil-title">${c.ti}</div><div class="conseil-text">${c.tx}</div></div></div>`).join('');
+
+    // Répartition CA
+    const colors=['#8B5CF6','#6366F1','#F59E0B','#D97706','#0EA5E9','#10B981'];
+    let bH='',lH='';
+    if(sR.tVentes>0){lots.forEach((lot,i)=>{const r=calcLotFull(lot,'real');const pct=(r.px/sR.tVentes)*100;const col=colors[i%colors.length];bH+=`<div class="repartition-segment" style="width:${pct}%;background:${col};">${pct.toFixed(0)}%</div>`;lH+=`<div class="legend-item"><div class="legend-dot" style="background:${col};"></div>${lot.nom}: ${f(r.px)} €</div>`})}
+    document.getElementById('rep-bar').innerHTML=bH;
+    document.getElementById('rep-leg').innerHTML=lH;
+
+    // Table lots
+    let tb='',tCout=0,tVent=0,tMB=0,tTVA=0,tNet=0;
+    lots.forEach(lot=>{
+        const r=calcLotFull(lot,'real');
+        const roiNet=r.coutTot>0?((r.resultatNet/r.coutTot)*100):0;
+        tCout+=r.coutTot;tVent+=r.px;tMB+=r.margeBrute;tTVA+=r.tva.tvaDue;tNet+=r.resultatNet;
+        const regime=lot.regimeTVA||'exoneration';
+        const regLabel=regime==='tva_marge'?'Marge':regime==='tva_prix_total'?'Total':'Exo';
+        tb+=`<tr><td><strong>${lot.nom}</strong><br><span style="font-size:10px;color:var(--text-light);">${LT[lot.type].l} ${showTVA?'· TVA '+regLabel:''}</span></td>
+        <td class="number">${f(r.coutTot)} €</td><td class="number">${f(r.px)} €</td>
+        <td class="number ${r.margeBrute>=0?'positive':'negative'}">${r.margeBrute>=0?'+':''}${f(r.margeBrute)} €</td>
+        <td class="number" style="color:${r.tva.tvaDue>=0?'#DC2626':'var(--secondary)'};">${showTVA?(r.tva.tvaDue>=0?'':'+')+(f(Math.abs(r.tva.tvaDue)))+' €':'—'}</td>
+        <td class="number ${r.resultatNet>=0?'positive':'negative'}">${r.resultatNet>=0?'+':''}${f(r.resultatNet)} €</td>
+        <td class="number">${roiNet.toFixed(1)}%</td></tr>`;
+    });
+    if(lots.length){
+        tb+=`<tr class="total-row"><td><strong>SOUS-TOTAL LOTS</strong></td><td class="number">${f(tCout)} €</td><td class="number">${f(tVent)} €</td><td class="number ${tMB>=0?'positive':'negative'}">${tMB>=0?'+':''}${f(tMB)} €</td><td class="number">${showTVA?f(tTVA)+' €':'—'}</td><td class="number ${tNet>=0?'positive':'negative'}">${tNet>=0?'+':''}${f(tNet)} €</td><td></td></tr>`;
+        tb+=`<tr><td colspan="2">Frais communs + Notaire</td><td></td><td class="number negative">-${f(fc.total+not)} €</td><td></td><td class="number negative">-${f(fc.total+not)} €</td><td></td></tr>`;
+        tb+=`<tr><td colspan="2">Portage (${g('dureePortage')}m à ${g('tauxCredit')}%)</td><td></td><td class="number negative">-${f(p.total)} €</td><td></td><td class="number negative">-${f(p.total)} €</td><td></td></tr>`;
+        tb+=`<tr class="grand-total"><td colspan="2"><strong>TOTAL PROJET</strong></td><td class="number">${f(sR.tVentes)} €</td><td class="number">${f(sR.margeBrute)} €</td><td class="number">${showTVA?f(sR.tTVADue)+' €':'—'}</td><td class="number">${sR.resultatNet>=0?'+':''}${f(sR.resultatNet)} €</td><td class="number">${sR.roi.toFixed(1)}%</td></tr>`;
+    }
+    document.getElementById('lots-tbody').innerHTML=tb;
+
+    // GO NO GO
+    const gng=calcGoNoGo(sR,sP);
+    const gc=document.getElementById('gng-circle');gc.className='gng-circle '+gng.verdict;
+    document.getElementById('gng-score').textContent=gng.total;
+    document.getElementById('gng-label').textContent=gng.label;
+    document.getElementById('gng-detail').innerHTML=gng.details.map(d=>`<div class="gng-bar-row"><div class="gng-bar-label">${d.l} <span style="color:var(--text-light);font-size:10px;">(${d.w}%)</span></div><div class="gng-bar-track"><div class="gng-bar-fill" style="width:${d.v}%;background:${d.c};"></div></div><div class="gng-bar-val" style="color:${d.c};">${d.v}</div></div>`).join('');
+
+    // Répartition associés (sur résultat net)
+    const pctP=g('pctPorteur'),pctI=g('pctInvestisseur'),pctA=g('pctApporteur');
+    const totPct=pctP+pctI+pctA;
+    const w=document.getElementById('pct-warning');
+    if(Math.abs(totPct-100)>.1){w.style.display='block';w.innerHTML='<i class="fas fa-exclamation-triangle"></i> Total: '+totPct.toFixed(0)+'% — doit être 100%'}else{w.style.display='none'}
+    const marge=sR.resultatNet;
+    const gP=marge*(pctP/100),gI=marge*(pctI/100),gA=marge*(pctA/100);
+    document.getElementById('rep-marge-lbl').textContent=(marge>=0?'+':'')+f(marge)+' €';
+    document.getElementById('rep-marge-lbl').style.color=marge>=0?'var(--secondary)':'var(--danger)';
+    document.getElementById('rep-assoc-bar').innerHTML=`<div class="seg" style="width:${pctP}%;background:var(--purple);">${pctP}%</div><div class="seg" style="width:${pctI}%;background:var(--primary);">${pctI}%</div><div class="seg" style="width:${pctA}%;background:var(--accent);">${pctA}%</div>`;
+    document.getElementById('assoc-grid').innerHTML=`
+        <div class="associe-card" style="border-color:var(--purple);"><div class="a-icon">🏗️</div><div class="a-label">Porteur de projet</div><div class="a-pct" style="color:var(--purple);">${pctP}%</div><div class="a-gain" style="color:${gP>=0?'var(--secondary)':'var(--danger)'};">${gP>=0?'+':''}${f(gP)} €</div><div class="a-desc">Gère l'opération</div></div>
+        <div class="associe-card" style="border-color:var(--primary);"><div class="a-icon">💰</div><div class="a-label">Investisseur</div><div class="a-pct" style="color:var(--primary);">${pctI}%</div><div class="a-gain" style="color:${gI>=0?'var(--secondary)':'var(--danger)'};">${gI>=0?'+':''}${f(gI)} €</div><div class="a-desc">Met l'argent</div></div>
+        <div class="associe-card" style="border-color:var(--accent);"><div class="a-icon">🤝</div><div class="a-label">Apporteur d'affaires</div><div class="a-pct" style="color:var(--accent);">${pctA}%</div><div class="a-gain" style="color:${gA>=0?'var(--secondary)':'var(--danger)'};">${gA>=0?'+':''}${f(gA)} €</div><div class="a-desc">Fait le lien</div></div>`;
+}
+
+// ===== RESET =====
+function resetForm(){
+    lots=[];lotId=0;
+    addLot({id:++lotId,nom:'Mitoyenne Gauche 113m²',type:'maison_renovation',statut:'a_vendre',
+        quotePartAcquisition:298879,travauxTVA20:0,travauxTVA10:7500,travauxTVA55:0,travauxSansTVA:1200,
+        viabilisation:0,architecte:5000,fraisVentePct:5,fraisCommercialisationLot:0,
+        prixVenteEstime:470000,prixVenteReel:null,surface:113,
+        regimeTVA:'tva_marge',
+        scenarioMode:'fixe',pctPess:-10,pctReal:0,pctOpti:10,
+        m2Pess:0,m2Real:0,m2Opti:0,fixePess:450000,fixeReal:470000,fixeOpti:480000});
+    addLot({id:++lotId,nom:'Mitoyenne Droite 99m²',type:'maison_renovation',statut:'a_vendre',
+        quotePartAcquisition:260373,travauxTVA20:0,travauxTVA10:7500,travauxTVA55:0,travauxSansTVA:0,
+        viabilisation:0,architecte:5000,fraisVentePct:5,fraisCommercialisationLot:0,
+        prixVenteEstime:410000,prixVenteReel:null,surface:99,
+        regimeTVA:'tva_marge',
+        scenarioMode:'fixe',pctPess:-10,pctReal:0,pctOpti:10,
+        m2Pess:0,m2Real:0,m2Opti:0,fixePess:400000,fixeReal:410000,fixeOpti:420000});
+    addLot({id:++lotId,nom:'Grange 90m²',type:'maison_renovation',statut:'a_vendre',
+        quotePartAcquisition:120748,travauxTVA20:0,travauxTVA10:0,travauxTVA55:0,travauxSansTVA:1500,
+        viabilisation:0,architecte:0,fraisVentePct:5,fraisCommercialisationLot:0,
+        prixVenteEstime:190000,prixVenteReel:null,surface:90,
+        regimeTVA:'tva_prix_total',
+        scenarioMode:'fixe',pctPess:-10,pctReal:0,pctOpti:10,
+        m2Pess:0,m2Real:0,m2Opti:0,fixePess:170000,fixeReal:190000,fixeOpti:200000});
+    onStatutFiscalChange();
+}
+
+// ===== PROJETS (localStorage) =====
+const STORAGE_KEY='prealty_mdb_projects_v2';
+const LAST_PROJECT_KEY='prealty_mdb_last_project';
+function getProjectName(){return(document.getElementById('nomProjet')?.value||'').trim()||'Mon Projet MDB'}
+function collectFormState(){
+    const ids=['nomProjet','typeOperation','prixAcquisition','fraisNotairePct','fraisAgence',
+        'statutFiscal','assujettiTVA','acqAupresAssujetti',
+        'fraisGeometre','fraisUrbanisme','autresFraisAdmin',
+        'travauxInt','travauxExt','archiGlobal','assurances','aleasPct',
+        'fraisCommercialisationGlobal','autresFraisCommuns',
+        'apportPct','tauxCredit','dureePortage','assuranceEmprunt','fraisGarantie','fraisDossier',
+        'penib1','penib2','penib3','penib4','penib5',
+        'pctPorteur','pctInvestisseur','pctApporteur'];
+    const values={};
+    ids.forEach(id=>{const el=document.getElementById(id);if(el)values[id]=el.value});
+    return{values,lots,lotId,repMode,dark:document.body.classList.contains('dark'),savedAt:new Date().toISOString()};
+}
+function applyFormState(state){
+    if(!state)return;
+    const{values}=state;
+    if(values){Object.entries(values).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v})}
+    // Migrate old lots (single 'travaux' field → travauxSansTVA)
+    lots=Array.isArray(state.lots)?state.lots.map(l=>{
+        if(l.travaux!==undefined&&l.travauxTVA20===undefined){
+            l.travauxSansTVA=l.travaux||0;l.travauxTVA20=0;l.travauxTVA10=0;l.travauxTVA55=0;delete l.travaux;
+        }
+        if(!l.regimeTVA)l.regimeTVA='exoneration';
+        return l;
+    }):[];
+    lotId=state.lotId||0;
+    repMode=state.repMode||'manuel';
+    setRepMode(repMode);
+    document.body.classList.toggle('dark',!!state.dark);
+    localStorage.setItem('prealty_dark',state.dark?'1':'0');
+    onStatutFiscalChange();
+    renderLots();calc();
+}
+function readProjects(){try{
+    // Try v2 first, fall back to v1
+    let p=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+    if(!p){p=JSON.parse(localStorage.getItem('prealty_mdb_projects_v1')||'{}')}
+    return p||{};
+}catch(e){return{}}}
+function writeProjects(obj){localStorage.setItem(STORAGE_KEY,JSON.stringify(obj))}
+function saveSimulation(){
+    const projects=readProjects();
+    const name=getProjectName();
+    const st=collectFormState();st.__savedAt=Date.now();projects[name]=st;
+    writeProjects(projects);localStorage.setItem(LAST_PROJECT_KEY,name);
+    alert('✅ Projet sauvegardé : '+name);
+}
+function openProjectsModal(){renderProjectsModal();const ov=document.getElementById('projectsModal');ov.classList.add('open');ov.setAttribute('aria-hidden','false')}
+function closeProjectsModal(){const ov=document.getElementById('projectsModal');ov.classList.remove('open');ov.setAttribute('aria-hidden','true')}
+function renderProjectsModal(){
+    const projects=readProjects(),names=Object.keys(projects).sort((a,b)=>a.localeCompare(b,'fr'));
+    const list=document.getElementById('projectsList'),count=document.getElementById('projectsCount');
+    if(!names.length){count.textContent="Aucun projet sauvegardé.";list.innerHTML='<div class="project-item"><div><div class="project-name">—</div><div class="project-meta">Clique sur Sauvegarder.</div></div></div>';return}
+    count.textContent=`${names.length} projet(s)`;
+    list.innerHTML=names.map(name=>{
+        const s=projects[name]||{},l=(Array.isArray(s.lots)?s.lots.length:0);
+        const ts=s.__savedAt?new Date(s.__savedAt):null;
+        const meta=`${l} lot(s)`+(ts?` · ${ts.toLocaleDateString('fr-FR')} ${ts.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`:'');
+        return`<div class="project-item"><div style="min-width:0"><div class="project-name">${escapeHtml(name)}</div><div class="project-meta">${escapeHtml(meta)}</div></div><div class="project-actions"><button class="btn btn-secondary" onclick="loadProjectByName(${JSON.stringify(name)})"><i class="fas fa-download"></i> Charger</button><button class="btn btn-danger" onclick="deleteProject(${JSON.stringify(name)})"><i class="fas fa-trash"></i></button></div></div>`;
+    }).join('');
+}
+function loadProjectByName(name){const p=readProjects();if(!p[name]){alert("Introuvable.");return}applyFormState(p[name]);localStorage.setItem(LAST_PROJECT_KEY,name);alert('📂 Chargé : '+name);closeProjectsModal()}
+function deleteProject(name){const p=readProjects();if(!p[name])return;if(!confirm('Supprimer "'+name+'" ?'))return;delete p[name];writeProjects(p);renderProjectsModal()}
+function deleteAllProjects(){const p=readProjects();if(!Object.keys(p).length){alert("Aucun projet.");return}if(!confirm('Supprimer TOUS les projets ?'))return;writeProjects({});renderProjectsModal()}
+function exportProjects(){const p=readProjects();const b=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='prealty_projets.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function importProjectsFile(ev){const file=ev.target.files&&ev.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const inc=JSON.parse(String(reader.result||'{}'))||{};const p=readProjects();writeProjects({...p,...inc});alert("✅ Import OK.");renderProjectsModal()}catch(e){alert("Fichier invalide.")}finally{ev.target.value=''}};reader.readAsText(file)}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function toggleDarkMode(){const n=!document.body.classList.contains('dark');document.body.classList.toggle('dark',n);localStorage.setItem('prealty_dark',n?'1':'0')}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded',()=>{
+    if(localStorage.getItem('prealty_dark')==='1')document.body.classList.add('dark');
+    const ov=document.getElementById('projectsModal');
+    ov.addEventListener('click',e=>{if(e.target===ov)closeProjectsModal()});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeProjectsModal()});
+    resetForm();
+    const projects=readProjects(),last=localStorage.getItem(LAST_PROJECT_KEY);
+    if(last&&projects[last]){applyFormState(projects[last])}
+    else{const n=getProjectName();if(projects[n])applyFormState(projects[n]);else{renderLots();calc()}}
+});
+</script>
+
+<!-- Modal Projets -->
+<div class="modal-overlay" id="projectsModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-header"><div><div class="modal-title"><i class="fas fa-folder-open"></i> Projets sauvegardés</div><div class="project-meta" id="projectsCount">—</div></div><button class="btn btn-secondary" onclick="closeProjectsModal()"><i class="fas fa-xmark"></i> Fermer</button></div>
+        <div class="modal-body"><div class="hint" style="font-size:12px;color:var(--text-light);margin-bottom:8px;">Un projet = tout l'état du formulaire (lots + TVA inclus).</div><div class="project-list" id="projectsList"></div></div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="exportProjects()"><i class="fas fa-file-export"></i> Export</button>
+            <label class="btn btn-secondary" style="cursor:pointer"><i class="fas fa-file-import"></i> Import<input id="importProjectsInput" type="file" accept="application/json" style="display:none" onchange="importProjectsFile(event)"></label>
+            <button class="btn btn-danger" onclick="deleteAllProjects()"><i class="fas fa-trash"></i> Tout supprimer</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
